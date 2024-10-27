@@ -1,0 +1,81 @@
+const userInput = document.getElementById('user-input');
+const sendButton = document.getElementById('send-button');
+const chatPanel = document.getElementById('chat-panel');
+
+// Function to update chat panel height based on input height
+function adjustChatPanelHeight() {
+  const inputHeight = userInput.scrollHeight + 10;
+  const maxHeight = 180;
+  const newChatPanelHeight = `calc(100vh - ${Math.min(inputHeight, maxHeight) + 60}px)`;
+  chatPanel.style.height = newChatPanelHeight;
+}
+
+// Check input content and toggle send button state
+function toggleSendButtonState() {
+  if (userInput.value.trim() !== '') {
+    sendButton.classList.add('active');
+  } else {
+    sendButton.classList.remove('active');
+  }
+}
+
+// Event listener for the send button
+sendButton.addEventListener('click', () => {
+  const userMessage = userInput.value;
+  if (userMessage.trim() !== '') {
+    const userMessageElement = document.createElement('div');
+    userMessageElement.classList.add('chat-message', 'user-message');
+    userMessageElement.textContent = userMessage;
+    chatPanel.appendChild(userMessageElement);
+
+    // Clear the input field and reset height to initial value
+    userInput.value = '';
+    userInput.style.height = '30px'; // Reset to initial single line height (same as CSS)
+    adjustChatPanelHeight(); // Adjust chat panel height after sending
+    toggleSendButtonState(); // Update button state
+
+    // Simulate AI response with logo
+    setTimeout(() => {
+      const aiMessageContainer = document.createElement('div');
+      aiMessageContainer.classList.add('ai-message-container');
+
+      const aiLogo = document.createElement('img');
+      aiLogo.src = 'chatbotlogo.png'; // Replace with the path to your logo
+      aiLogo.alt = 'AI Logo';
+      aiLogo.classList.add('ai-logo');
+
+      const aiMessageElement = document.createElement('div');
+      aiMessageElement.classList.add('chat-message', 'ai-message');
+      aiMessageElement.textContent = "AI's response: This is a simulated response. I'm just trying to put a longer text here to see how it looks like in the screen.";
+
+      aiMessageContainer.appendChild(aiLogo);
+      aiMessageContainer.appendChild(aiMessageElement);
+      chatPanel.appendChild(aiMessageContainer);
+
+      chatPanel.scrollTop = chatPanel.scrollHeight; // Scroll to the bottom
+    }, 1000);
+
+    chatPanel.scrollTop = chatPanel.scrollHeight; // Scroll to the bottom
+  }
+});
+
+// Adjust the input height only when text overflows to a new line
+userInput.addEventListener('input', () => {
+  userInput.style.height = '30px'; // Reset height to initial one line
+  if (userInput.scrollHeight > userInput.clientHeight) {
+    userInput.style.height = Math.min(userInput.scrollHeight, 180) + 'px'; // Expand if overflow
+  }
+  adjustChatPanelHeight(); // Adjust chat panel height
+  toggleSendButtonState(); // Update button state
+});
+
+// Allow pressing "Enter" to send the message without a new line
+userInput.addEventListener('keypress', (event) => {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendButton.click();
+  }
+});
+
+// Initial call to set button state
+toggleSendButtonState();

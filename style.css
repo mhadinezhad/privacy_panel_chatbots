@@ -1,0 +1,141 @@
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Set initial width */
+.chat-panel, .input-container {
+    width: 770px;
+    max-width: 770px; /* Maximum width on larger screens */
+}
+
+/* Responsive width for smaller screens */
+@media (max-width: 880px) {
+    .chat-panel, .input-container {
+        width: 90vw; /* Adjusts to 90% of screen width for smaller screens */
+    }
+}
+
+.chat-panel {
+    height: calc(100vh - 120px); /* Adjusts height to account for input-container and extra space */
+    background-color: #ffffff;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: height 0.2s ease;
+}
+
+/* Subtle scrollbar style for chat panel */
+.chat-panel::-webkit-scrollbar {
+    width: 6px;
+}
+.chat-panel::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+.chat-panel::-webkit-scrollbar-thumb {
+    background: #ededed;
+    border-radius: 10px;
+}
+.chat-panel::-webkit-scrollbar-thumb:hover {
+    background: #ffffff;
+}
+
+.chat-message {
+    word-wrap: break-word;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.user-message {
+    max-width: 68%;
+    align-self: flex-end;
+    background-color: #f0f0f0;
+    line-height: 1.5;
+}
+
+.ai-logo {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%; /* Circular logo */
+    margin-top: 13px; /* Adjust as needed to vertically align with text */
+}
+
+.ai-message {
+    max-width: 95%;
+    color: #333;
+    background: none;
+    padding: 10px 15px;
+    line-height: 1.7;
+}
+
+.ai-message-container {
+    display: flex;
+    align-items: flex-start; /* Align items at the top */
+    gap: 8px; /* Space between logo and message */
+    max-width: 99%; /* Keep it aligned with other messages */
+}
+
+.input-container {
+    display: flex;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border-radius: 30px;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    margin-top: auto;
+    margin-bottom: 40px; /* Adds blank space below the input container */
+}
+
+#user-input {
+    flex-grow: 1;
+    padding: 5px 15px;
+    height: 30px; /* Initial height for one line of text */
+    line-height: 30px; /* Matches height to vertically center text */
+    font-size: 14px;
+    border: none;
+    outline: none;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    max-height: 180px;
+    resize: none;
+    overflow-y: auto;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.8;
+}
+
+#user-input::placeholder {
+    text-align: left;
+    font-size: 15px;
+}
+
+#send-button {
+    width: 30px;
+    height: 30px;
+    background-color: #c6c5c5; /* Lighter color for inactive state */
+    color: rgb(192, 191, 191);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px; /* Separate button space from input */
+}
+
+#send-button.active {
+    background-color: #000; /* Darker color when active */
+}
+
+#send-button:hover {
+    background-color: #000;
+}
