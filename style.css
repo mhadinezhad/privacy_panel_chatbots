@@ -6,7 +6,7 @@ body {
     flex-direction: row;
     height: 100vh;
     overflow: hidden;
-    gap: 20px; /* Gap between main-content and pii-notice-panel */
+    gap: 20px;
 }
 
 .main-content {
@@ -15,15 +15,14 @@ body {
     flex-direction: column;
     align-items: center;
     overflow: hidden;
-    width: calc(100% - 500px - 40px); /* Width minus panel, left, and right gaps */
+    width: calc(100% - 500px - 40px); /* Adjusts for the panel and spacing */
     margin-left: 5px;
-    transition: width 0.3s ease, padding 0.3s ease;
+    transition: width 0.3s ease;
 }
 
-/* Set initial width for inner elements */
 .chat-panel, .input-container {
     width: 100%;
-    max-width: 730px; /* Adjust to keep the inner content within main-content's padding */
+    max-width: 730px;
 }
 
 /* Adjust main-content width and padding on smaller screens */
@@ -192,11 +191,45 @@ body {
     color: #333;
 }
 
-/* Show panel and adjust main content */
-body.pii-panel-active .pii-notice-panel {
-    display: block;
+/* Toggle Panel Button */
+.toggle-panel-button {
+    position: absolute;
+    right: 488px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: white;
+    width: 20px;
+    height: 60px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: right 0.3s ease;
+    font-size: 18px;
+    z-index: 300;
+    color: #d6d6d6;
+    border-style: solid;
+    box-shadow: -1px 0 4px #d6d6d6;
 }
 
-body.pii-panel-active .main-content {
-    width: calc(100% - 500px - 40px);
+.toggle-panel-button:hover{
+    color: #b8b8b8;
+    box-shadow: -1px 0 4px #b8b8b8;
+}
+
+/* Collapsed State for Panel */
+body.panel-collapsed .pii-notice-panel {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body.panel-collapsed .main-content {
+    width: calc(100% - 40px);
+}
+
+body.panel-collapsed .toggle-panel-button {
+    right: 15px;
+    font-size: 20px;
 }

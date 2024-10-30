@@ -1,6 +1,19 @@
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const chatPanel = document.getElementById('chat-panel');
+const piiNoticePanel = document.getElementById('piiNoticePanel');
+
+// Create and add the toggle button dynamically
+const togglePanelButton = document.createElement('div');
+togglePanelButton.classList.add('toggle-panel-button');
+togglePanelButton.textContent = '>';
+document.body.appendChild(togglePanelButton);
+
+// Toggle panel visibility
+togglePanelButton.addEventListener('click', () => {
+    document.body.classList.toggle('panel-collapsed');
+    togglePanelButton.textContent = document.body.classList.contains('panel-collapsed') ? '<' : '>';
+});
 
 // Function to update chat panel height based on input height
 function adjustChatPanelHeight() {
