@@ -22,14 +22,37 @@
   </div>
   
   <!-- Toggle Button to Hide/Show Panel -->
-  <div class="toggle-panel-button" id="togglePanelButton">></div>
 
   <div class="pii-notice-panel" id="piiNoticePanel">
     <div class="pii-panel-header">
-      <h2>Notice</h2>
+      <div class="icon-container">
+        <img src="exclamationmark.png" alt="Privacy Icon" class="privacy-icon">
+      </div>
+      <div class="text-container">
+        <h2>Privacy Warning!</h2>
+        <p class="warning-text">You are sharing potentially sensitive information!</p>
+      </div>
     </div>
     <div class="pii-panel-content">
-      <p>This panel will show sensitive information if detected in your message.</p>
+      <p class="info-text">
+        Including or excluding sensitive information usually does not affect the chatbot's utility but may risk your safety and privacy!
+      </p>
+      <h4>Want to know more?</h4>
+      <button class="privacy-tips-btn">
+        Click to review answers to five chatbot privacy questions and three examples of real-world privacy cases
+      </button>
+      <div class="anonymization-section">
+        <div class="anonymization-section-title">Use this panel to anonymize sensitive information</div>
+        <div class="anonymization-section-body">
+
+        </div>
+      </div>
+      <div class="other-actions">
+        <div class="other-actions-title">Other actions to protect your information</div>
+        <div class="other-actions-body">
+          <button class="opt-in-out-btn">Opt in or out of sharing your content for model training</button>
+        </div>
+      </div>
     </div>
   </div>
   
