@@ -1,4 +1,4 @@
-const nlp = require('compromise');
+// const nlp = require('compromise');
 
 function findDatesOfBirth(text) {
     const dateRegex = /\b(\d{1,2})(st|nd|rd|th)?\s*(of\s+)?(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\s*(,?\s*\d{4})\b|\b(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\s*(\d{1,2})(st|nd|rd|th)?\s*(,?\s*\d{4})?\b|\b(\d{1,4})[-/. ](\d{1,2})[-/. ](\d{1,4})\b/gi;
@@ -118,20 +118,20 @@ function extractAllPII(text) {
 }
 
 // Example usage
-const text = `
+// const text = `
 
-Hi ChatGPT! I need help with organizing a surprise party for my friend Sarah. Her birthday is on August 12, 1993, and I was thinking of sending out invitations to some of her friends. Could you help me draft an invitation email?
+// Hi ChatGPT! I need help with organizing a surprise party for my friend Sarah. Her birthday is on August 12, 1993, and I was thinking of sending out invitations to some of her friends. Could you help me draft an invitation email?
 
-Also, I have a list of her friends with their emails:
+// Also, I have a list of her friends with their emails:
 
-John Doe: john.doe@example.com
-Jane Smith: jane.smith@anothermail.com
-Mike Johnson: mike.johnson@workplace.com
-The party will be at Sarah's place, 123 Main Street, Apartment 7B, Hometown, NY 12345. Should I include her phone number in the invitation for RSVPs? It's (123) 456-7890.
+// John Doe: john.doe@example.com
+// Jane Smith: jane.smith@anothermail.com
+// Mike Johnson: mike.johnson@workplace.com
+// The party will be at Sarah's place, 123 Main Street, Apartment 7B, Hometown, NY 12345. Should I include her phone number in the invitation for RSVPs? It's (123) 456-7890.
 
-Lastly, I've set up a Wi-Fi network for the party, and the MAC address is 00:1A:2B:3C:4D:5E. Could you remind me to share the password with the guests?
+// Lastly, I've set up a Wi-Fi network for the party, and the MAC address is 00:1A:2B:3C:4D:5E. Could you remind me to share the password with the guests?
 
-`;
+// `;
 
-const allPII = extractAllPII(text);
-console.log("All PII:", allPII);
+// const allPII = extractAllPII(text);
+// console.log("All PII:", allPII);
