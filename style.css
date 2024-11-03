@@ -15,7 +15,7 @@ body {
     flex-direction: column;
     align-items: center;
     overflow: hidden;
-    width: calc(100% - 500px - 40px); /* Adjusts for the panel and spacing */
+    width: calc(100% - 500px - 40px);
     margin-left: 5px;
     transition: width 0.3s ease;
 }
@@ -37,7 +37,7 @@ body {
     height: calc(100vh - 120px);
     background-color: #ffffff;
     padding: 10px;
-    overflow-y: auto;
+    overflow-y: scroll;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -45,17 +45,17 @@ body {
 }
 
 /* Subtle scrollbar style for chat panel */
-.chat-panel::-webkit-scrollbar {
+.chat-panel::-webkit-scrollbar, .faq-left::-webkit-scrollbar, .faq-right::-webkit-scrollbar{
     width: 6px;
 }
-.chat-panel::-webkit-scrollbar-track {
+.chat-panel::-webkit-scrollbar-track, .faq-left::-webkit-scrollbar-track, .faq-right::-webkit-scrollbar-track{
     background: #ffffff;
 }
-.chat-panel::-webkit-scrollbar-thumb {
-    background: #ededed;
+.chat-panel::-webkit-scrollbar-thumb, .faq-left::-webkit-scrollbar-thumb, .faq-right::-webkit-scrollbar-thumb{
+    background: #e0e0e0;
     border-radius: 10px;
 }
-.chat-panel::-webkit-scrollbar-thumb:hover {
+.chat-panel::-webkit-scrollbar-thumb:hover, .faq-left::-webkit-scrollbar-thumb:hover, .faq-right::-webkit-scrollbar-thumb:hover{
     background: #ffffff;
 }
 
@@ -154,7 +154,7 @@ body {
 /* Toggle Panel Button */
 .toggle-panel-button {
     position: absolute;
-    right: calc(500px - 12px); /* Dynamically adjust based on the panel width */
+    right: calc(500px - 12px);
     top: 50%;
     transform: translateY(-50%);
     background-color: white;
@@ -265,6 +265,7 @@ body.panel-collapsed .toggle-panel-button {
 
 .privacy-tips-btn:hover{
     background: #e4e3e3;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .anonymization-section, .other-actions {
@@ -279,7 +280,6 @@ body.panel-collapsed .toggle-panel-button {
     color: #ddd;
     border-radius: 7px 7px 0 0;
     font-size: 13px;
-    /* font-weight: 500; */
 }
   
 .anonymization-section-body{
@@ -301,3 +301,162 @@ body.panel-collapsed .toggle-panel-button {
     border-radius: 5px;
 }
   
+
+/* Privacy Tips Pop-up Panel */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black to lighten background */
+    z-index: 999; /* Ensure it's above all other content */
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+  }
+
+.overlay.active{
+    display: flex;
+}
+
+.privacy-tips-popup {
+    display: none;
+    position: fixed;
+    width: 90%;
+    height: 85%;
+    background-color: #fff;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+    border-radius: 8px;
+    /* Centoring the panel on the screen */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .popup-content {
+    position: relative;
+    display: flex;
+    gap: 20px;
+    height: 100%;
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+  
+  .close-popup-btn {
+    position: absolute;
+    top: -5px;
+    right: 0px;
+    background: none;
+    border: none;
+    font-size: 30px;
+    cursor: pointer;
+  }
+  
+  .faq-section {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+  }
+  
+  .faq-left, .faq-right {
+    flex: 1;
+    overflow-y: scroll;
+    box-sizing: border-box;
+    padding-right: 5px;
+  }
+  
+  .faq-left h2, .faq-right h2 {
+    font-size: 15px;
+    margin-bottom: 20px;
+    padding-left: 3px;
+    color: #001F3F;
+  }
+  
+  .faq-item {
+    /* background-color: #eeecec; */
+    padding: 15px 0px 15px 20px;
+    font-size: 13px;
+    border: solid 1px #dce6eb;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+  }
+  
+  .faq-item:hover{
+    background-color: #f3f7f8;
+  }
+
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+
+  .faq-answer {
+    display: none;
+    padding-left: 20px;
+    margin-top: 20px;
+  }
+  
+  .answer-summary {
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .answer-details {
+    display: none;
+    margin-right: 15px;
+    padding: 1px 15px;
+    background-color: #e6eff3;
+    border-radius: 5px;
+  }
+  
+  .faq-toggle {
+    font-size: 23px;
+    cursor: pointer;
+    margin-left: 15px;
+    margin-right: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    color: #001F3F;
+  }
+  
+  .toggle-layertwo{
+    font-size: 20px;
+    margin-right: 30px;
+  }
+
+  /* Custom Tooltip Styles */
+[data-tooltip] {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -30px; /* Adjust as needed */
+    left: 85%;
+    transform: translateX(-50%);
+    background-color: #5b5a5a;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.1s ease;
+    z-index: 10;
+  }
+  
+  [data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
