@@ -3,20 +3,15 @@ const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const chatPanel = document.getElementById('chat-panel');
 const piiNoticePanel = document.getElementById('piiNoticePanel');
-const overlay = document.getElementById('overlay');
+const proceedSendBtn = document.getElementById('proceedSendBtn');
 const anonymizationSectionBody = document.querySelector('.anonymization-section-body');
-
-// Create and add the toggle button dynamically
-const togglePanelButton = document.createElement('div');
-togglePanelButton.classList.add('toggle-panel-button');
-togglePanelButton.textContent = '>';
-document.body.appendChild(togglePanelButton);
+const togglePanelButton = document.getElementById('togglepanelbutton');
 
 // Toggle panel visibility
 togglePanelButton.addEventListener('click', () => {
     document.body.classList.toggle('panel-collapsed');
-    togglePanelButton.textContent = document.body.classList.contains('panel-collapsed') ? '<' : '>';
-});
+    togglePanelButton.innerHTML = document.body.classList.contains('panel-collapsed') ? '&laquo;' : '&raquo;';
+}); 
 
 // Function to update chat panel height based on input height
 function adjustChatPanelHeight() {
@@ -39,8 +34,7 @@ function toggleSendButtonState() {
 function createPIIBox(type, instances) {
     const box = document.createElement('div');
     box.classList.add('pii-type-box');
-    
-    // Header with plus/minus sign and PII type name
+
     const header = document.createElement('div');
     header.classList.add('pii-header');
     const toggleSign = document.createElement('span');
@@ -48,11 +42,10 @@ function createPIIBox(type, instances) {
     toggleSign.textContent = '+';
     const typeName = document.createElement('span');
     typeName.textContent = type;
-    
+
     header.appendChild(toggleSign);
     header.appendChild(typeName);
 
-    // Content section to list all PII instances
     const content = document.createElement('div');
     content.classList.add('pii-details');
     content.style.display = 'none';
@@ -60,7 +53,7 @@ function createPIIBox(type, instances) {
     instances.forEach(instance => {
         const instanceElement = document.createElement('div');
         instanceElement.classList.add('pii-instance');
-        
+
         const locateicon = document.createElement('img');
         locateicon.src = 'locate.png'; // Replace with your image path
         locateicon.classList.add('pii-action-icon');
@@ -68,6 +61,7 @@ function createPIIBox(type, instances) {
         const anonymizeButton = document.createElement('button');
         anonymizeButton.textContent = 'Anonymize';
         anonymizeButton.classList.add('pii-action-button');
+        anonymizeButton.classList.add('anonymize-instance');
 
         const restoreicon = document.createElement('img');
         restoreicon.src = 'restore.png'; // Replace with your image path
@@ -84,7 +78,6 @@ function createPIIBox(type, instances) {
         content.appendChild(instanceElement);
     });
 
-    // Bulk action buttons
     const bulkActions = document.createElement('div');
     bulkActions.classList.add('pii-bulk-actions');
     const anonymizeAllButton = document.createElement('button');
@@ -99,7 +92,6 @@ function createPIIBox(type, instances) {
     bulkActions.appendChild(restoreAllButton);
     content.appendChild(bulkActions);
 
-    // Toggle functionality for the PII box
     header.addEventListener('click', () => {
         const isVisible = content.style.display === 'block';
         content.style.display = isVisible ? 'none' : 'block';
@@ -144,9 +136,11 @@ function handlePIIDetection(userMessage) {
     }
 
     if (hasPII) {
-        sendButton.textContent = 'Proceed with Sending';
+        piiNoticePanel.style.display = 'block';
+        togglePanelButton.style.display = 'flex';
     } else {
-        sendButton.textContent = 'Send';
+        piiNoticePanel.style.display = 'none';
+        togglePanelButton.style.display = 'none';
     }
 
     return hasPII;
@@ -157,43 +151,58 @@ sendButton.addEventListener('click', () => {
     const userMessage = userInput.value;
     if (userMessage.trim() !== '') {
         const hasPII = handlePIIDetection(userMessage);
-        if (!hasPII || sendButton.textContent === 'Proceed with Sending') {
-            const userMessageElement = document.createElement('div');
-            userMessageElement.classList.add('chat-message', 'user-message');
-            userMessageElement.textContent = userMessage;
-            chatPanel.appendChild(userMessageElement);
 
-            // Clear the input field and reset height to initial value
-            userInput.value = '';
-            userInput.style.height = '30px';
-            adjustChatPanelHeight();
-            toggleSendButtonState();
-
-            // Simulate AI response with logo
-            setTimeout(() => {
-                const aiMessageContainer = document.createElement('div');
-                aiMessageContainer.classList.add('ai-message-container');
-
-                const aiLogo = document.createElement('img');
-                aiLogo.src = 'chatbotlogo.png'; // Replace with the path to your logo
-                aiLogo.alt = 'AI Logo';
-                aiLogo.classList.add('ai-logo');
-
-                const aiMessageElement = document.createElement('div');
-                aiMessageElement.classList.add('chat-message', 'ai-message');
-                aiMessageElement.textContent = "AI's response: This is a simulated response. I'm just trying to put a longer text here to see how it looks like on the screen.";
-
-                aiMessageContainer.appendChild(aiLogo);
-                aiMessageContainer.appendChild(aiMessageElement);
-                chatPanel.appendChild(aiMessageContainer);
-
-                chatPanel.scrollTop = chatPanel.scrollHeight;
-            }, 1000);
-
-            chatPanel.scrollTop = chatPanel.scrollHeight;
+        if (!hasPII) {
+            sendUserMessage(userMessage);
         }
     }
 });
+
+// Event listener for the "Proceed with Sending..." button
+proceedSendBtn.addEventListener('click', () => {
+    const userMessage = userInput.value;
+    piiNoticePanel.style.display = 'none';
+    togglePanelButton.style.display = 'none';
+    if (userMessage.trim() !== '') {
+        sendUserMessage(userMessage);
+    }
+});
+
+function sendUserMessage(message) {
+    const userMessageElement = document.createElement('div');
+    userMessageElement.classList.add('chat-message', 'user-message');
+    userMessageElement.textContent = message;
+    chatPanel.appendChild(userMessageElement);
+
+    // Clear the input field and reset height to initial value
+    userInput.value = '';
+    userInput.style.height = '30px';
+    adjustChatPanelHeight();
+    toggleSendButtonState();
+
+    // Simulate AI response with logo
+    setTimeout(() => {
+        const aiMessageContainer = document.createElement('div');
+        aiMessageContainer.classList.add('ai-message-container');
+
+        const aiLogo = document.createElement('img');
+        aiLogo.src = 'chatbotlogo.png'; // Replace with the path to your logo
+        aiLogo.alt = 'AI Logo';
+        aiLogo.classList.add('ai-logo');
+
+        const aiMessageElement = document.createElement('div');
+        aiMessageElement.classList.add('chat-message', 'ai-message');
+        aiMessageElement.textContent = "AI's response: This is a simulated response. I'm just trying to put a longer text here to see how it looks like on the screen.";
+
+        aiMessageContainer.appendChild(aiLogo);
+        aiMessageContainer.appendChild(aiMessageElement);
+        chatPanel.appendChild(aiMessageContainer);
+
+        chatPanel.scrollTop = chatPanel.scrollHeight;
+    }, 1000);
+
+    chatPanel.scrollTop = chatPanel.scrollHeight;
+}
 
 // Adjust the input height only when text overflows to a new line
 userInput.addEventListener('input', () => {
