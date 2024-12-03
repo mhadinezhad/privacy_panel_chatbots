@@ -549,6 +549,10 @@ body.panel-collapsed .toggle-panel-button {
     margin-right: 5px;
     display: block; /* Ensure proper block behavior */
     max-width: 50%;
+
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Hide overflow content */
+    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
 }
 
 
@@ -651,3 +655,35 @@ body.panel-collapsed .toggle-panel-button {
 #user-input {
     transition: background-color 0.3s ease;
 }
+
+
+/* Fade out the privacy panel */
+.pii-notice-panel.inactive {
+    pointer-events: none; /* Disable interactions */
+}
+
+/* Reduce opacity of the panel content but not the inactive message */
+.pii-notice-panel.inactive > *:not(.inactive-message) {
+    opacity: 0.1;
+}
+
+/* Message to indicate inactivity */
+.inactive-message {
+    opacity: 1; /* Ensure the message is fully visible */
+    width: 65%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #F4ECC2;
+    border: 1px solid #C8AF55;
+    padding: 30px 30px;
+    border-radius: 5px;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 400;
+    /* color: #856404; */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Ensure it is above other elements */
+}
+

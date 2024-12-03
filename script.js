@@ -66,6 +66,12 @@ function createPIIBox(type, instances) {
         restoreIcon.setAttribute('data-start', start);
         restoreIcon.setAttribute('data-end', end);
 
+        restoreIcon.addEventListener('click', () => {
+            const textarea = document.getElementById('user-input');
+            // Replace specific PII text with the original
+            updateTextareaWithPreservedIndices(textarea, textarea.value, [{ start, end }], () => text);        
+        });
+
         const dropdownContainer = document.createElement('div');
         dropdownContainer.classList.add('pii-dropdown-container');
 
@@ -85,7 +91,18 @@ function createPIIBox(type, instances) {
             actionItem.textContent = action;
             actionItem.classList.add('dropdown-item');
 
+            // Add event listeners for the actions
             actionItem.addEventListener('click', () => {
+                const textarea = document.getElementById('user-input');
+                const replaceFn = (original, index) => {
+                    if (action === 'Remove') return `[${type}]`;
+                    if (action === 'Fake') return generateFake(type);
+                    if (action === 'Generalize') return generalizePII(type, original);
+                };
+
+                // Update textarea for this instance
+                updateTextareaWithPreservedIndices(textarea, textarea.value, [{ start, end }], replaceFn);
+
                 dropdownMenu.style.display = 'none'; // Close the dropdown after action
             });
 
@@ -142,7 +159,18 @@ function createPIIBox(type, instances) {
         actionItem.textContent = action;
         actionItem.classList.add('dropdown-item');
 
+        // Add event listeners for bulk actions
         actionItem.addEventListener('click', () => {
+            const textarea = document.getElementById('user-input');
+            const replaceFn = (original, index) => {
+                if (action === 'Remove') return `[${type}]`;
+                if (action === 'Fake') return generateFake(type);
+                if (action === 'Generalize') return generalizePII(type, original);
+            };
+
+            // Update textarea for all instances
+            updateTextareaWithPreservedIndices(textarea, textarea.value, instances, replaceFn);
+
             anonymizeAllMenu.style.display = 'none'; // Close the dropdown after action
         });
 
@@ -159,6 +187,7 @@ function createPIIBox(type, instances) {
         }
     });
 
+
     anonymizeAllContainer.appendChild(anonymizeAllButton);
     anonymizeAllContainer.appendChild(anonymizeAllMenu);
     bulkActionsContainer.appendChild(anonymizeAllContainer);
@@ -168,6 +197,12 @@ function createPIIBox(type, instances) {
     restoreAllButton.textContent = 'Restore All';
     restoreAllButton.classList.add('pii-bulk-button');
     bulkActionsContainer.appendChild(restoreAllButton);
+
+    restoreAllButton.addEventListener('click', () => {
+        const textarea = document.getElementById('user-input');
+        // Replace all instances of the PII type with their original text
+        updateTextareaWithPreservedIndices(textarea, textarea.value, instances, (_, index) => instances[index].text);    
+    });
 
     content.appendChild(bulkActionsContainer);
 
@@ -192,9 +227,79 @@ function createPIIBox(type, instances) {
     addLocateListeners();
 }
 
+// Utility function to replace a PII instance in the text
+function replaceInstance(text, start, end, replacement) {
+    const replacementWithPadding = replacement.length > (end - start)
+        ? replacement.slice(0, end - start - 1) + ']' // Truncate within placeholder brackets
+        : replacement.padEnd(end - start, ' ');      // Pad replacement with spaces if shorter
+    return text.slice(0, start) + replacementWithPadding + text.slice(end);
+}
+
+// Function to update the textarea with preserved indices
+function updateTextareaWithPreservedIndices(textarea, text, instances, replaceFn) {
+    let offset = 0; // Track the offset due to replacements
+    instances.forEach(({ start, end }, index) => {
+        const adjustedStart = start + offset;
+        const adjustedEnd = end + offset;
+        let replacement = replaceFn(text.substring(start, end), index);
+
+        // Ensure replacement length matches the original length
+        if (replacement.length > (adjustedEnd - adjustedStart)) {
+            replacement = replacement.slice(0, adjustedEnd - adjustedStart - 1) + ']'; // Truncate with closing bracket
+        } else {
+            replacement = replacement.padEnd(adjustedEnd - adjustedStart, ' '); // Pad with spaces
+        }
+
+        // Replace the instance and calculate new offset
+        const newText = text.slice(0, adjustedStart) + replacement + text.slice(adjustedEnd);
+        offset += replacement.length - (adjustedEnd - adjustedStart);
+        text = newText;
+    });
+
+    textarea.value = text; // Update the textarea value
+}
+
+
+// Utility function to generate fake data
+function generateFake(type) {
+    switch (type) {
+        case 'Email Address':
+            return 'fake.email@example.com';
+        case 'Name':
+            return 'John Doe';
+        case 'Physical Address':
+            return '123 Fake Street, Faketown, FK 12345';
+        case 'Date of Birth':
+            return 'January 1, 1990';
+        case 'SSN':
+            return '123-45-6789';
+        default:
+            return '[Fake Data]';
+    }
+}
+
+// Utility function to generalize PII data
+function generalizePII(type, value) {
+    if (type === 'Physical Address') {
+        const parts = value.split(',');
+        return parts.length > 1 ? parts[parts.length - 1].trim() : '[Generalized Address]';
+    }
+    if (type === 'Date of Birth') {
+        const yearMatch = value.match(/\b\d{4}\b/);
+        return yearMatch ? yearMatch[0] : '[Generalized Date]';
+    }
+    return '[Generalized Data]';
+}
 
 // Function to handle PII detection
 function handlePIIDetection(userMessage) {
+
+    // Remove the inactive message if it exists
+    const inactiveMessage = piiNoticePanel.querySelector('.inactive-message');
+    if (inactiveMessage) {
+        piiNoticePanel.removeChild(inactiveMessage);
+    }
+
     const piiData = extractAllPII(userMessage);
     const { datesOfBirth, emails, macAddresses, names, addresses, ssns } = piiData;
     anonymizationSectionBody.innerHTML = ''; // Clear previous PII
@@ -238,6 +343,11 @@ function handlePIIDetection(userMessage) {
 
 // Event listener for the send button
 sendButton.addEventListener('click', () => {
+    if (piiNoticePanel.classList.contains('inactive')) {
+        // Clear the inactive state and regenerate the notice
+        piiNoticePanel.classList.remove('inactive');
+    }
+
     const userMessage = userInput.value;
     if (userMessage.trim() == ''){
         piiNoticePanel.style.display = 'none';
@@ -309,6 +419,18 @@ userInput.addEventListener('input', () => {
     }
     adjustChatPanelHeight();
     toggleSendButtonState();
+
+    if (piiNoticePanel.style.display === 'block') {
+        // Check if the inactive message already exists
+        if (!piiNoticePanel.querySelector('.inactive-message')) {
+            // Fade out and lock the privacy panel
+            piiNoticePanel.classList.add('inactive');
+            const inactiveMessage = document.createElement('div');
+            inactiveMessage.classList.add('inactive-message');
+            inactiveMessage.textContent = "Privacy warning inactive due to manual edits. Click Enter or Send button to update it.";
+            piiNoticePanel.appendChild(inactiveMessage);
+        }
+    }
 });
 
 // Allow pressing "Enter" to send the message without a new line
@@ -398,7 +520,6 @@ function adjustIndexForNewlines(text, index) {
     return adjustedIndex;
 }
 
-
 // Add event listeners to locate icons dynamically created in PII boxes
 function addLocateListeners() {
     const locateIcons = document.querySelectorAll('.locate-icon');
@@ -411,7 +532,4 @@ function addLocateListeners() {
         });
     });
 }
-
-
-
 
