@@ -161,12 +161,13 @@ body {
   .proceed-send-btn {
     background-color: #000;
     color: #fff;
-    padding: 12px 70px;
+    padding: 12px 12px;
     font-size: 14px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+    width: 100%;
   }
   
   .proceed-send-btn:hover {
@@ -280,7 +281,7 @@ body.panel-collapsed .toggle-panel-button {
 .privacy-tips-btn {
     border: 2px solid #000;
     background: transparent;
-    padding: 12px 10px;
+    padding: 12px 8px;
     font-size: 15px;
     font-weight: 550;
     border-radius: 8px;
@@ -288,6 +289,7 @@ body.panel-collapsed .toggle-panel-button {
     cursor: pointer;
     text-align: center;
     margin-bottom: 15px;
+    line-height: 1.5;
 }
 
 .privacy-tips-btn:hover {
@@ -496,6 +498,7 @@ body.panel-collapsed .toggle-panel-button {
     padding: 8px 12px;
     margin-bottom: 10px;
     transition: background-color 0.3s;
+    overflow: visible;
 }
 
 .pii-type-box:hover {
@@ -528,6 +531,7 @@ body.panel-collapsed .toggle-panel-button {
     margin-top: 10px;
     border-top: 1px solid #ddd;
     padding-top: 10px;
+    overflow: visible;
 }
 
 /* Style for each PII instance */
@@ -537,13 +541,16 @@ body.panel-collapsed .toggle-panel-button {
     gap: 12px;
     align-items: center;
     margin-bottom: 8px;
+    overflow: visible;
 }
 
 .pii-instance span {
     flex-grow: 1;
-    text-align: left;
-    margin-right: 10px;
+    margin-right: 5px;
+    display: block; /* Ensure proper block behavior */
+    max-width: 50%;
 }
+
 
 .pii-action-group {
     display: flex;
@@ -560,10 +567,39 @@ body.panel-collapsed .toggle-panel-button {
 }
 
 /* Styles for the anonymize button and icons */
+.pii-dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 5px 0;
+    display: none;
+    z-index: 1000;
+}
+
+.dropdown-item {
+    padding: 5px 15px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    text-align: left;
+    width: 100%;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f1f1;
+}
+
 .pii-action-button {
     background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    padding: 5px 10px;
+    border: 1px solid #1a1919;
+    padding: 5px 7px;
     font-size: 13px;
     cursor: pointer;
     border-radius: 4px;
@@ -572,8 +608,9 @@ body.panel-collapsed .toggle-panel-button {
 
 .pii-action-button:hover{
     background-color: #dedede;
-    border: 1px solid #a9a9a9;
+    border: 1px solid #1a1919;
     transform: scale(1.05);
+    cursor: pointer;
 }
 
 .pii-action-icon {
@@ -596,7 +633,7 @@ body.panel-collapsed .toggle-panel-button {
 
 .pii-bulk-button {
     background-color: #f0f0f0;
-    border: 1px solid #ccc;
+    border: 1px solid #1a1919;
     padding: 8px 12px;
     font-size: 13px;
     cursor: pointer;
@@ -606,6 +643,11 @@ body.panel-collapsed .toggle-panel-button {
 
 .pii-bulk-button:hover {
     background-color: #dedede;
-    border: 1px solid #a9a9a9;
+    border: 1px solid #1a1919;
     transform: scale(1.05);
+}
+
+/* Add a temporary highlight effect */
+#user-input {
+    transition: background-color 0.3s ease;
 }

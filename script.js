@@ -50,47 +50,126 @@ function createPIIBox(type, instances) {
     content.classList.add('pii-details');
     content.style.display = 'none';
 
-    instances.forEach(instance => {
+    instances.forEach(({ text, start, end }) => {
         const instanceElement = document.createElement('div');
         instanceElement.classList.add('pii-instance');
 
-        const locateicon = document.createElement('img');
-        locateicon.src = 'locate.png'; // Replace with your image path
-        locateicon.classList.add('pii-action-icon');
+        const locateIcon = document.createElement('img');
+        locateIcon.src = 'locate.png';
+        locateIcon.classList.add('pii-action-icon', 'locate-icon'); // Add tooltip class
+        locateIcon.setAttribute('data-start', start);
+        locateIcon.setAttribute('data-end', end);
 
-        const anonymizeButton = document.createElement('button');
-        anonymizeButton.textContent = 'Anonymize';
-        anonymizeButton.classList.add('pii-action-button');
-        anonymizeButton.classList.add('anonymize-instance');
+        const restoreIcon = document.createElement('img');
+        restoreIcon.src = 'restore.png';
+        restoreIcon.classList.add('pii-action-icon');
+        restoreIcon.setAttribute('data-start', start);
+        restoreIcon.setAttribute('data-end', end);
+
+        const dropdownContainer = document.createElement('div');
+        dropdownContainer.classList.add('pii-dropdown-container');
+
+        const dropdownButton = document.createElement('button');
+        dropdownButton.textContent = 'Anonymize ▼';
+        dropdownButton.classList.add('pii-action-button');
+        dropdownButton.setAttribute('data-start', start);
+        dropdownButton.setAttribute('data-end', end);
+
+        const dropdownMenu = document.createElement('div');
+        dropdownMenu.classList.add('dropdown-menu');
+        dropdownMenu.style.display = 'none';
+
+        const actions = ['Remove', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+        actions.forEach(action => {
+            const actionItem = document.createElement('button');
+            actionItem.textContent = action;
+            actionItem.classList.add('dropdown-item');
+
+            actionItem.addEventListener('click', () => {
+                dropdownMenu.style.display = 'none'; // Close the dropdown after action
+            });
+
+            dropdownMenu.appendChild(actionItem);
+        });
+
+        dropdownButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            // Toggle dropdown visibility
+            const isVisible = dropdownMenu.style.display === 'block';
+            closeAllDropdowns();
+            if (!isVisible) {
+                dropdownMenu.style.display = 'block';
+            }
+        });
+
+        dropdownContainer.appendChild(dropdownButton);
+        dropdownContainer.appendChild(dropdownMenu);
 
         const restoreicon = document.createElement('img');
         restoreicon.src = 'restore.png'; // Replace with your image path
         restoreicon.classList.add('pii-action-icon');
 
         const instanceText = document.createElement('span');
-        instanceText.textContent = instance;
+        instanceText.textContent = text;
 
         instanceElement.appendChild(instanceText);
-        instanceElement.appendChild(locateicon);
-        instanceElement.appendChild(anonymizeButton);
-        instanceElement.appendChild(restoreicon);
+        instanceElement.appendChild(locateIcon);
+        instanceElement.appendChild(dropdownContainer);
+        instanceElement.appendChild(restoreIcon);
 
         content.appendChild(instanceElement);
+
     });
 
-    const bulkActions = document.createElement('div');
-    bulkActions.classList.add('pii-bulk-actions');
+    const bulkActionsContainer = document.createElement('div');
+    bulkActionsContainer.classList.add('pii-bulk-actions');
+
+    // Create "Anonymize All" dropdown
+    const anonymizeAllContainer = document.createElement('div');
+    anonymizeAllContainer.classList.add('pii-dropdown-container');
+
     const anonymizeAllButton = document.createElement('button');
-    anonymizeAllButton.textContent = 'Anonymize All';
+    anonymizeAllButton.textContent = 'Anonymize All ▼';
     anonymizeAllButton.classList.add('pii-bulk-button');
 
+    const anonymizeAllMenu = document.createElement('div');
+    anonymizeAllMenu.classList.add('dropdown-menu');
+    anonymizeAllMenu.style.display = 'none';
+
+    const bulkActions = ['Remove', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+    bulkActions.forEach(action => {
+        const actionItem = document.createElement('button');
+        actionItem.textContent = action;
+        actionItem.classList.add('dropdown-item');
+
+        actionItem.addEventListener('click', () => {
+            anonymizeAllMenu.style.display = 'none'; // Close the dropdown after action
+        });
+
+        anonymizeAllMenu.appendChild(actionItem);
+    });
+
+    anonymizeAllButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        // Toggle dropdown visibility
+        const isVisible = anonymizeAllMenu.style.display === 'block';
+        closeAllDropdowns();
+        if (!isVisible) {
+            anonymizeAllMenu.style.display = 'block';
+        }
+    });
+
+    anonymizeAllContainer.appendChild(anonymizeAllButton);
+    anonymizeAllContainer.appendChild(anonymizeAllMenu);
+    bulkActionsContainer.appendChild(anonymizeAllContainer);
+
+    // Add "Restore All" button
     const restoreAllButton = document.createElement('button');
     restoreAllButton.textContent = 'Restore All';
     restoreAllButton.classList.add('pii-bulk-button');
+    bulkActionsContainer.appendChild(restoreAllButton);
 
-    bulkActions.appendChild(anonymizeAllButton);
-    bulkActions.appendChild(restoreAllButton);
-    content.appendChild(bulkActions);
+    content.appendChild(bulkActionsContainer);
 
     header.addEventListener('click', () => {
         const isVisible = content.style.display === 'block';
@@ -101,7 +180,18 @@ function createPIIBox(type, instances) {
     box.appendChild(header);
     box.appendChild(content);
     anonymizationSectionBody.appendChild(box);
+
+    function closeAllDropdowns() {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    }
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', closeAllDropdowns);
+
+    addLocateListeners();
 }
+
 
 // Function to handle PII detection
 function handlePIIDetection(userMessage) {
@@ -127,7 +217,7 @@ function handlePIIDetection(userMessage) {
         hasPII = true;
     }
     if (addresses.length > 0) {
-        createPIIBox('Address', addresses);
+        createPIIBox('Physical Address', addresses);
         hasPII = true;
     }
     if (ssns.length > 0) {
@@ -149,9 +239,16 @@ function handlePIIDetection(userMessage) {
 // Event listener for the send button
 sendButton.addEventListener('click', () => {
     const userMessage = userInput.value;
+    if (userMessage.trim() == ''){
+        piiNoticePanel.style.display = 'none';
+        togglePanelButton.style.display = 'none';
+    }
+
     if (userMessage.trim() !== '') {
         const hasPII = handlePIIDetection(userMessage);
-
+        if(hasPII) {
+            sendButton.classList.remove('active');
+        }
         if (!hasPII) {
             sendUserMessage(userMessage);
         }
@@ -271,3 +368,50 @@ document.querySelectorAll('.faq-item').forEach(item => {
         });
     });
 });
+
+function locateAndHighlight(start, end) {
+    const textarea = document.getElementById('user-input');
+    textarea.focus();
+
+    // Adjust for newlines to align indices with the textarea's interpretation
+    const adjustedStart = adjustIndexForNewlines(textarea.value, start);
+    const adjustedEnd = adjustIndexForNewlines(textarea.value, end);
+
+    // Highlight the selected text
+    textarea.setSelectionRange(adjustedStart, adjustedEnd);
+
+    // Scroll to the highlighted text
+    const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight);
+    const linesAbove = (textarea.value.slice(0, adjustedStart).match(/\n/g) || []).length;
+    textarea.scrollTop = lineHeight * linesAbove;
+}
+
+// Helper function to adjust indices for newlines
+function adjustIndexForNewlines(text, index) {
+    let adjustedIndex = index;
+    const newlineMatches = [...text.matchAll(/\r?\n/g)];
+    newlineMatches.forEach(match => {
+        if (match.index < index) {
+            adjustedIndex -= match[0].length - 1; // Adjust for newline discrepancies
+        }
+    });
+    return adjustedIndex;
+}
+
+
+// Add event listeners to locate icons dynamically created in PII boxes
+function addLocateListeners() {
+    const locateIcons = document.querySelectorAll('.locate-icon');
+    locateIcons.forEach(icon => {
+        const start = parseInt(icon.getAttribute('data-start'), 10);
+        const end = parseInt(icon.getAttribute('data-end'), 10);
+
+        icon.addEventListener('click', () => {
+            locateAndHighlight(start, end);
+        });
+    });
+}
+
+
+
+

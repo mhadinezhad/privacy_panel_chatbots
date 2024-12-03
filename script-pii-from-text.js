@@ -3,6 +3,7 @@
 function findDatesOfBirth(text) {
     const dateRegex = /\b(\d{1,2})(st|nd|rd|th)?\s*(of\s+)?(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\s*(,?\s*\d{4})\b|\b(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\s*(\d{1,2})(st|nd|rd|th)?\s*(,?\s*\d{4})?\b|\b(\d{1,4})[-/. ](\d{1,2})[-/. ](\d{1,4})\b/gi;
     const contextRegex = /\b(bday|born|date of birth|dateofbirth|day of birth|dob|age|birthdate|birth date|birthday|birth day|was born on|born on)\b/i;
+    // how about cases when they say I'm 27 years old?
     const dates = [];
     let match;
     while ((match = dateRegex.exec(text)) !== null) {
@@ -11,28 +12,89 @@ function findDatesOfBirth(text) {
         const afterDate = text.slice(match.index + date.length, Math.min(match.index + date.length + 50, text.length));
         const surroundingText = beforeDate + afterDate;
         if (contextRegex.test(surroundingText)) {
-            dates.push(date);
+            dates.push({
+                text: date,
+                start: match.index,
+                end: match.index + date.length
+            });
         }
     }
     return dates;
 }
 
 function findPII(text) {
-    const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+    const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
     const macAddressRegex = /\b(?:[A-Fa-f0-9]{2}[:.-]){5}[A-Fa-f0-9]{2}\b/g;
-    const emails = text.match(emailRegex) || [];
-    const macAddresses = text.match(macAddressRegex) || [];
+
+    const emails = [];
+    const macAddresses = [];
+    let match;
+
+    // Capture emails
+    while ((match = emailRegex.exec(text)) !== null) {
+        // Ensure the match is not part of an empty "Cc:" or similar
+        const beforeMatch = text.slice(Math.max(0, match.index - 5), match.index).trim();
+        if (!/^cc:|bcc:|to:|from:$/i.test(beforeMatch) || match[0].trim() !== '') {
+            emails.push({
+                text: match[0],
+                start: match.index,
+                end: match.index + match[0].length
+            });
+        }
+    }
+
+    // Reset regex lastIndex to ensure it doesn't interfere with subsequent captures
+    emailRegex.lastIndex = 0;
+
+    // Capture MAC addresses
+    while ((match = macAddressRegex.exec(text)) !== null) {
+        macAddresses.push({
+            text: match[0],
+            start: match.index,
+            end: match.index + match[0].length
+        });
+    }
+
     return {
-        emails: emails,
-        macAddresses: macAddresses
+        emails,
+        macAddresses
     };
 }
 
+
 function extractNames(text) {
-    const doc = nlp(text);
-    const people = doc.people().out('array');
-    return people;
+    const doc = nlp(text); // Assuming the Compromise NLP library
+    const names = [];
+    const seenIndices = new Set(); // Track processed positions
+
+    const people = doc.people().out('array'); // Extract unique names
+    people.forEach(name => {
+        let start = 0;
+
+        // Use a loop to find all occurrences of each name
+        while ((start = text.indexOf(name, start)) !== -1) {
+            const end = start + name.length;
+
+            // Add only if this position hasn't been processed
+            if (!seenIndices.has(start)) {
+                seenIndices.add(start);
+                names.push({
+                    text: name,
+                    start,
+                    end
+                });
+            }
+
+            // Move to the next position
+            start = end;
+        }
+    });
+
+    return names;
 }
+
+
+
 
 function extractAddresses(text) {
     const addresses = [];
@@ -41,8 +103,13 @@ function extractAddresses(text) {
     const zipRegex = /\b\d{5}(?:-\d{4})?\b/gi;
     const addressPattern = new RegExp(`${streetRegex.source},?\\s*${cityStateRegex.source},?\\s*${zipRegex.source}`, 'gi');
     let match;
+
     while ((match = addressPattern.exec(text)) !== null) {
-        addresses.push(match[0].trim());
+        addresses.push({
+            text: match[0],
+            start: match.index,
+            end: match.index + match[0].length
+        });
     }
     const filteredAddresses = addresses.filter(address => {
         const businessKeywords = /\b(Suite|Ste|Office|Branch|Headquarters|Corp|Corporation|Business|Center|Plaza|Mall|Company|Co|Factory|Outlet|Store|Market|Gallery)\b/i;
@@ -72,6 +139,7 @@ function extractAddresses(text) {
 function findSSNs(text) {
     const ssnRegex = /\b\d{3}[-.\s/]*\d{2}[-.\s/]*\d{4}\b/g;
     const contextKeywords = /\b(SSN|Social Security|Social Security Number|Social Security Num|Social Sec Num|Social Sec. Num.|Social Security Num.|SSN#)\b/i;
+
     function isValidSSN(ssn) {
         const cleanSSN = ssn.replace(/[-.\s/]/g, '');
         const segments = [cleanSSN.substring(0, 3), cleanSSN.substring(3, 5), cleanSSN.substring(5)];
@@ -80,6 +148,7 @@ function findSSNs(text) {
         }
         return true;
     }
+
     function hasContext(text, index) {
         const contextWindow = 30;
         const start = Math.max(0, index - contextWindow);
@@ -87,17 +156,26 @@ function findSSNs(text) {
         const surroundingText = text.substring(start, end);
         return contextKeywords.test(surroundingText);
     }
-    const matches = text.match(ssnRegex) || [];
-    const validSSNs = matches.filter((ssn) => {
-        const index = text.indexOf(ssn);
-        const isContinuousFormat = ssn.includes('-') || ssn.includes('.') || ssn.includes('/') || ssn.includes(' ');
-        if (isValidSSN(ssn)) {
-            return isContinuousFormat ? true : hasContext(text, index);
+
+    const ssns = [];
+    let match;
+
+    while ((match = ssnRegex.exec(text)) !== null) {
+        const ssn = match[0];
+        const index = match.index;
+
+        if (isValidSSN(ssn) && hasContext(text, index)) {
+            ssns.push({
+                text: ssn,
+                start: index,
+                end: index + ssn.length
+            });
         }
-        return false;
-    });
-    return validSSNs;
+    }
+
+    return ssns;
 }
+
 
 // Combined function to extract all PII
 function extractAllPII(text) {
@@ -106,16 +184,17 @@ function extractAllPII(text) {
     const names = extractNames(text);
     const addresses = extractAddresses(text);
     const ssns = findSSNs(text);
-    
+
     return {
-        datesOfBirth: datesOfBirth,
+        datesOfBirth,
         emails: pii.emails,
         macAddresses: pii.macAddresses,
-        names: names,
-        addresses: addresses,
-        ssns: ssns
+        names,
+        addresses,
+        ssns
     };
 }
+
 
 // Example usage
 // const text = `
