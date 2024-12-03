@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "compromise": "^14.14.2"
+    "compromise": "^14.14.2",
+    "openai": "^4.75.0"
   }
 }

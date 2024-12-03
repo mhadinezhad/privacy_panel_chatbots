@@ -123,7 +123,7 @@ function createPIIBox(type, instances) {
         dropdownContainer.appendChild(dropdownMenu);
 
         const restoreicon = document.createElement('img');
-        restoreicon.src = 'restore.png'; // Replace with your image path
+        restoreicon.src = 'restore.png';
         restoreicon.classList.add('pii-action-icon');
 
         const instanceText = document.createElement('span');
@@ -375,7 +375,8 @@ proceedSendBtn.addEventListener('click', () => {
     }
 });
 
-function sendUserMessage(message) {
+
+async function sendUserMessage(message) {
     const userMessageElement = document.createElement('div');
     userMessageElement.classList.add('chat-message', 'user-message');
     userMessageElement.textContent = message;
@@ -387,29 +388,118 @@ function sendUserMessage(message) {
     adjustChatPanelHeight();
     toggleSendButtonState();
 
-    // Simulate AI response with logo
-    setTimeout(() => {
-        const aiMessageContainer = document.createElement('div');
-        aiMessageContainer.classList.add('ai-message-container');
+    // Show a placeholder for the AI response
+    const aiMessageContainer = document.createElement('div');
+    aiMessageContainer.classList.add('ai-message-container');
 
-        const aiLogo = document.createElement('img');
-        aiLogo.src = 'chatbotlogo.png'; // Replace with the path to your logo
-        aiLogo.alt = 'AI Logo';
-        aiLogo.classList.add('ai-logo');
+    const aiLogo = document.createElement('img');
+    aiLogo.src = 'chatbotlogo.png';
+    aiLogo.alt = 'AI Logo';
+    aiLogo.classList.add('ai-logo');
 
-        const aiMessageElement = document.createElement('div');
-        aiMessageElement.classList.add('chat-message', 'ai-message');
-        aiMessageElement.textContent = "AI's response: This is a simulated response. I'm just trying to put a longer text here to see how it looks like on the screen.";
+    const aiMessageElement = document.createElement('div');
+    aiMessageElement.classList.add('chat-message', 'ai-message');
+    aiMessageElement.innerHTML = ''; // Empty placeholder
 
-        aiMessageContainer.appendChild(aiLogo);
-        aiMessageContainer.appendChild(aiMessageElement);
-        chatPanel.appendChild(aiMessageContainer);
-
-        chatPanel.scrollTop = chatPanel.scrollHeight;
-    }, 1000);
-
+    aiMessageContainer.appendChild(aiLogo);
+    aiMessageContainer.appendChild(aiMessageElement);
+    chatPanel.appendChild(aiMessageContainer);
     chatPanel.scrollTop = chatPanel.scrollHeight;
+
+    try {
+        // Stream the response from ChatGPT API
+        await getChatGPTResponse(message, aiMessageElement);
+    } catch (error) {
+        console.error('Error fetching ChatGPT response:', error);
+
+        // Display an error message in the placeholder
+        aiMessageElement.textContent = 'Sorry, there was an error processing your request. Please try again later.';
+    }
 }
+
+async function getChatGPTResponse(userMessage, aiMessageElement) {
+    const apiKey = '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';
+
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: 'gpt-4',
+                messages: [
+                    { role: 'system', content: 'You are a helpful assistant.' },
+                    { role: 'user', content: userMessage },
+                ],
+                max_tokens: 700,
+                stream: true,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let done = false;
+        let fullResponse = ''; // Accumulate the entire response
+
+        while (!done) {
+            const { value, done: readerDone } = await reader.read();
+            done = readerDone;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const parsedChunk = extractContentFromChunk(chunk);
+
+            if (parsedChunk) {
+                fullResponse += parsedChunk; // Accumulate the full response
+
+                // Process and render interim Markdown
+                const interimHtml = marked.parse(cleanUpMarkdown(fullResponse.trim()));
+                aiMessageElement.innerHTML = interimHtml;
+                chatPanel.scrollTop = chatPanel.scrollHeight; // Scroll to the bottom
+            }
+        }
+
+        // Final render with cleaned Markdown
+        aiMessageElement.innerHTML = marked.parse(cleanUpMarkdown(fullResponse.trim()));
+        chatPanel.scrollTop = chatPanel.scrollHeight; // Scroll to the bottom
+    } catch (error) {
+        console.error('Error fetching ChatGPT response:', error);
+        throw error;
+    }
+}
+
+function extractContentFromChunk(chunk) {
+    try {
+        const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+
+        // Parse valid lines and construct coherent content
+        return lines.map(line => {
+            const json = line.replace('data: ', '').trim();
+            if (json === '[DONE]') return ''; // End of stream
+            const parsed = JSON.parse(json);
+            return parsed.choices[0]?.delta?.content || '';
+        }).join('');
+    } catch (error) {
+        console.error('Error parsing chunk:', error);
+        return '';
+    }
+}
+
+function cleanUpMarkdown(markdown) {
+    return markdown
+        .replace(/\n{2,}/g, '\n\n') // Ensure proper paragraph spacing
+        .replace(/(?<!\n)\n(?!\n)/g, ' ') // Replace single newlines with spaces
+        .replace(/^\s+|\s+$/g, '') // Trim leading/trailing spaces
+        .replace(/ {2,}/g, ' '); // Collapse multiple spaces
+}
+
+//  const apiKey = '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';
+
 
 // Adjust the input height only when text overflows to a new line
 userInput.addEventListener('input', () => {
