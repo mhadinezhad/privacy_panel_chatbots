@@ -1,3 +1,43 @@
+// Initialize Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
+import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBXT5HtDjFwTVkQkCxupWkuagXKI2Tc-S4",
+    authDomain: "privacy-notice-f01f8.firebaseapp.com",
+    databaseURL: "https://privacy-notice-f01f8-default-rtdb.firebaseio.com",
+    projectId: "privacy-notice-f01f8",
+    storageBucket: "privacy-notice-f01f8.firebasestorage.app",
+    messagingSenderId: "85202029299",
+    appId: "1:85202029299:web:9261876663039479264586",
+    measurementId: "G-3SV3XPHKGN"
+  };
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const auth = getAuth(app);
+
+// Sign in anonymously and retrieve user ID
+let userId;
+let messagesRef;
+let interactionsRef;
+
+signInAnonymously(auth)
+    .then((userCredential) => {
+        userId = userCredential.user.uid; // Get the user's UID
+        console.log("User signed in anonymously with UID:", userId);
+
+        // Initialize references only after UID is obtained
+        messagesRef = ref(database, `participants/${userId}/messages`);
+        interactionsRef = ref(database, `participants/${userId}/interactions`);
+    })
+    .catch((error) => {
+        console.error("Error during anonymous sign-in:", error);
+    });
+
+// ******************************* Above is for Firebase *******************************
+
 // Select relevant elements
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
@@ -62,7 +102,7 @@ function createPIIBox(type, instances) {
 
         const restoreIcon = document.createElement('img');
         restoreIcon.src = 'restore.png';
-        restoreIcon.classList.add('pii-action-icon');
+        restoreIcon.classList.add('pii-action-icon', 'restore-icon');
         restoreIcon.setAttribute('data-start', start);
         restoreIcon.setAttribute('data-end', end);
 
@@ -342,27 +382,33 @@ function handlePIIDetection(userMessage) {
 }
 
 // Event listener for the send button
+
 sendButton.addEventListener('click', () => {
     if (piiNoticePanel.classList.contains('inactive')) {
         // Clear the inactive state and regenerate the notice
         piiNoticePanel.classList.remove('inactive');
     }
+    
+    const userMessage = userInput.value.trim(); // Get the user's message
 
-    const userMessage = userInput.value;
-    if (userMessage.trim() == ''){
+    if (userMessage === '') {
         piiNoticePanel.style.display = 'none';
         togglePanelButton.style.display = 'none';
+        return; // Do nothing if the input is empty
     }
 
-    if (userMessage.trim() !== '') {
-        const hasPII = handlePIIDetection(userMessage);
-        if(hasPII) {
-            sendButton.classList.remove('active');
-        }
-        if (!hasPII) {
-            sendUserMessage(userMessage);
-        }
+    const hasPII = handlePIIDetection(userMessage); // Detect PII
+    const sentToAPI = !hasPII; // Determine if the message can be sent to the API
+    const action = hasPII ? "proceedSendBtn" : "sendButton";
+
+    if (hasPII) {
+        logMessage(action, userMessage, false, null);
+
+        sendButton.classList.remove('active'); // Block sending if PII is detected
+        return;
     }
+    // If no PII, send the message to the API and log the response
+    sendUserMessage(userMessage);
 });
 
 // Event listener for the "Proceed with Sending..." button
@@ -382,7 +428,7 @@ async function sendUserMessage(message) {
     userMessageElement.textContent = message;
     chatPanel.appendChild(userMessageElement);
 
-    // Clear the input field and reset height to initial value
+    // Clear input field and adjust UI
     userInput.value = '';
     userInput.style.height = '30px';
     adjustChatPanelHeight();
@@ -407,15 +453,63 @@ async function sendUserMessage(message) {
     chatPanel.scrollTop = chatPanel.scrollHeight;
 
     try {
-        // Stream the response from ChatGPT API
-        await getChatGPTResponse(message, aiMessageElement);
-    } catch (error) {
-        console.error('Error fetching ChatGPT response:', error);
+        const response = await getChatGPTResponse(message, aiMessageElement); // Fetch API response
+        // Log the actual API response
+        logMessage("sendButton", message, true, response);
 
-        // Display an error message in the placeholder
+    } catch (error) {
+        console.error("Error fetching ChatGPT response:", error);
+        logMessage("sendButton", message, true, null);
         aiMessageElement.textContent = 'Sorry, there was an error processing your request. Please try again later.';
     }
 }
+
+
+function logMessage(action, message, sentToAPI, response = null) {
+    const timestamp = Date.now();
+    const readableDate = new Date(timestamp).toLocaleString();
+
+    const messageIdRef = push(messagesRef); // Create a unique message ID
+    set(messageIdRef, {
+        action: action,
+        message: message,
+        sentToAPI: sentToAPI,
+        response: response,
+        timestamp: timestamp,
+        readableDate: readableDate, // Add the human-readable format
+    });
+}
+
+function logInteraction(panel, action, element) {
+    const timestamp = Date.now();
+    const readableDate = new Date(timestamp).toLocaleString();
+
+    const interactionIdRef = push(interactionsRef); // Ensure `interactionsRef` is correctly defined
+    set(interactionIdRef, {
+        panel: panel,
+        action: action,
+        element: element,
+        timestamp: timestamp,
+        readableDate: readableDate, // Add the human-readable format
+    });
+}
+
+piiNoticePanel.addEventListener('click', (event) => {
+    const clickedElement = event.target;
+
+    // Get detailed information about the clicked element
+    const elementDetails = {
+        id: clickedElement.getAttribute('id') || null,
+        class: clickedElement.getAttribute('class') || null,
+        dataId: clickedElement.getAttribute('data-id') || null,
+        tag: clickedElement.tagName,
+        textContent: clickedElement.textContent.trim().substring(0, 40), // First 50 chars of text
+    };
+
+    // Log the interaction with detailed element info
+    logInteraction("privacyNoticePanel", "click", JSON.stringify(elementDetails));
+});
+
 
 async function getChatGPTResponse(userMessage, aiMessageElement) {
     const apiKey = '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';
@@ -467,6 +561,9 @@ async function getChatGPTResponse(userMessage, aiMessageElement) {
         // Final render with cleaned Markdown
         aiMessageElement.innerHTML = marked.parse(cleanUpMarkdown(fullResponse.trim()));
         chatPanel.scrollTop = chatPanel.scrollHeight; // Scroll to the bottom
+
+        return fullResponse.trim(); // Return the final response
+
     } catch (error) {
         console.error('Error fetching ChatGPT response:', error);
         throw error;
@@ -623,3 +720,19 @@ function addLocateListeners() {
     });
 }
 
+// Privacy Tips Pop-up: Log Interactions Dynamically
+privacyTipsPopup.addEventListener('click', (event) => {
+    const clickedElement = event.target;
+
+    // Get detailed information about the clicked element
+    const elementDetails = {
+        id: clickedElement.getAttribute('id') || null,
+        class: clickedElement.getAttribute('class') || null,
+        dataId: clickedElement.getAttribute('data-id') || null,
+        tag: clickedElement.tagName,
+        textContent: clickedElement.textContent.trim().substring(0, 50), // Log first 50 chars of text
+    };
+
+    // Log the interaction with detailed element info
+    logInteraction("privacyTipsPopup", "click", JSON.stringify(elementDetails));
+});
