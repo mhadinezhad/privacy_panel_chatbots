@@ -17,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const auth = getAuth(app);
+let conversationHistory = [];
 
 // Sign in anonymously and retrieve user ID
 let userId;
@@ -461,7 +462,19 @@ async function sendUserMessage(message) {
     chatPanel.scrollTop = chatPanel.scrollHeight;
 
     try {
+        // Add user message to the history
+        conversationHistory.push({ role: 'user', content: message });
+        if (conversationHistory.length > 20) {
+            conversationHistory.shift(); // Ensure only last 20 messages are kept
+        }
+
         const response = await getChatGPTResponse(message, aiMessageElement); // Fetch API response
+
+        // Add assistant response to the history
+        conversationHistory.push({ role: 'assistant', content: response });
+        if (conversationHistory.length > 20) {
+            conversationHistory.shift(); // Ensure only last 20 messages are kept
+        }
 
         // Log the successful response based on the action
         if (isProceeding) {
@@ -538,10 +551,7 @@ async function getChatGPTResponse(userMessage, aiMessageElement) {
             },
             body: JSON.stringify({
                 model: 'gpt-4',
-                messages: [
-                    { role: 'system', content: 'You are a helpful assistant.' },
-                    { role: 'user', content: userMessage },
-                ],
+                messages: conversationHistory, // Include the last 20 messages
                 max_tokens: 700,
                 stream: true,
             }),
