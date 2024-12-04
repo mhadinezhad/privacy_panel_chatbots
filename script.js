@@ -23,6 +23,7 @@ let userId;
 let messagesRef;
 let interactionsRef;
 
+
 signInAnonymously(auth)
     .then((userCredential) => {
         userId = userCredential.user.uid; // Get the user's UID
@@ -46,6 +47,7 @@ const piiNoticePanel = document.getElementById('piiNoticePanel');
 const proceedSendBtn = document.getElementById('proceedSendBtn');
 const anonymizationSectionBody = document.querySelector('.anonymization-section-body');
 const togglePanelButton = document.getElementById('togglepanelbutton');
+let isProceeding = false;
 
 // Toggle panel visibility
 togglePanelButton.addEventListener('click', () => {
@@ -399,15 +401,16 @@ sendButton.addEventListener('click', () => {
 
     const hasPII = handlePIIDetection(userMessage); // Detect PII
     const sentToAPI = !hasPII; // Determine if the message can be sent to the API
-    const action = hasPII ? "proceedSendBtn" : "sendButton";
 
+    
     if (hasPII) {
-        logMessage(action, userMessage, false, null);
-
-        sendButton.classList.remove('active'); // Block sending if PII is detected
+        // If PII exists, log the blocked action and display the notice
+        logMessage("sendButton", userMessage, false, null); // Log the block
+        sendButton.classList.remove('active'); // Block sending
         return;
     }
     // If no PII, send the message to the API and log the response
+    logMessage("sendButton", userMessage, true, null); // Log the initial send action
     sendUserMessage(userMessage);
 });
 
@@ -416,9 +419,14 @@ proceedSendBtn.addEventListener('click', () => {
     const userMessage = userInput.value;
     piiNoticePanel.style.display = 'none';
     togglePanelButton.style.display = 'none';
-    if (userMessage.trim() !== '') {
-        sendUserMessage(userMessage);
+    
+    if (userMessage === '') {
+        return; // Do nothing if the input is empty
     }
+
+    isProceeding = true; // Mark the use of proceedSendBtn
+    logMessage("proceedSendBtn", userMessage, false, null); // Log the initial action
+    sendUserMessage(userMessage);
 });
 
 
@@ -454,16 +462,23 @@ async function sendUserMessage(message) {
 
     try {
         const response = await getChatGPTResponse(message, aiMessageElement); // Fetch API response
-        // Log the actual API response
-        logMessage("sendButton", message, true, response);
 
+        // Log the successful response based on the action
+        if (isProceeding) {
+            logMessage("proceedSendBtn", message, true, response);
+            isProceeding = false; // Reset the flag
+        } else {
+            logMessage("sendButton", message, true, response);
+        }
     } catch (error) {
         console.error("Error fetching ChatGPT response:", error);
-        logMessage("sendButton", message, true, null);
+
+        // Log the error response based on the action
+        const action = isProceeding ? "proceedSendBtn" : "sendButton";
+        logMessage(action, message, true, null);
         aiMessageElement.textContent = 'Sorry, there was an error processing your request. Please try again later.';
     }
 }
-
 
 function logMessage(action, message, sentToAPI, response = null) {
     const timestamp = Date.now();
