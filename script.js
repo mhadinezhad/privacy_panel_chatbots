@@ -128,7 +128,7 @@ function createPIIBox(type, instances) {
         dropdownMenu.classList.add('dropdown-menu');
         dropdownMenu.style.display = 'none';
 
-        const actions = ['Remove', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+        const actions = ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
         actions.forEach(action => {
             const actionItem = document.createElement('button');
             actionItem.textContent = action;
@@ -138,7 +138,7 @@ function createPIIBox(type, instances) {
             actionItem.addEventListener('click', () => {
                 const textarea = document.getElementById('user-input');
                 const replaceFn = (original, index) => {
-                    if (action === 'Remove') return `[${type}]`;
+                    if (action === 'Retract') return `[${type}]`;
                     if (action === 'Fake') return generateFake(type);
                     if (action === 'Generalize') return generalizePII(type, original);
                 };
@@ -196,7 +196,7 @@ function createPIIBox(type, instances) {
     anonymizeAllMenu.classList.add('dropdown-menu');
     anonymizeAllMenu.style.display = 'none';
 
-    const bulkActions = ['Remove', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+    const bulkActions = ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
     bulkActions.forEach(action => {
         const actionItem = document.createElement('button');
         actionItem.textContent = action;
@@ -206,7 +206,7 @@ function createPIIBox(type, instances) {
         actionItem.addEventListener('click', () => {
             const textarea = document.getElementById('user-input');
             const replaceFn = (original, index) => {
-                if (action === 'Remove') return `[${type}]`;
+                if (action === 'Retract') return `[${type}]`;
                 if (action === 'Fake') return generateFake(type);
                 if (action === 'Generalize') return generalizePII(type, original);
             };
@@ -464,16 +464,18 @@ async function sendUserMessage(message) {
     try {
         // Add user message to the history
         conversationHistory.push({ role: 'user', content: message });
-        if (conversationHistory.length > 20) {
-            conversationHistory.shift(); // Ensure only last 20 messages are kept
+        
+        if (conversationHistory.length > 10) {
+            conversationHistory.shift(); // Ensure only last 10 messages are kept
         }
 
         const response = await getChatGPTResponse(message, aiMessageElement); // Fetch API response
 
         // Add assistant response to the history
         conversationHistory.push({ role: 'assistant', content: response });
-        if (conversationHistory.length > 20) {
-            conversationHistory.shift(); // Ensure only last 20 messages are kept
+
+        if (conversationHistory.length > 10) {
+            conversationHistory.shift(); // Ensure only last 10 messages are kept
         }
 
         // Log the successful response based on the action
