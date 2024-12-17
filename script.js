@@ -48,6 +48,19 @@ const piiNoticePanel = document.getElementById('piiNoticePanel');
 const proceedSendBtn = document.getElementById('proceedSendBtn');
 const anonymizationSectionBody = document.querySelector('.anonymization-section-body');
 const togglePanelButton = document.getElementById('togglepanelbutton');
+const overlay = document.getElementById('overlay');
+const settingsPopup = document.getElementById('settings-popup');
+const dataControlsBtn = document.getElementById('data-controls-btn');
+const closeSettings = document.getElementById('close-settings');
+const modelPopup = document.getElementById('model-popup');
+const modelDoneBtn = document.getElementById('model-done-btn');
+const closeModelPopup = document.getElementById('close-model-popup');
+const toggleState = document.getElementById('toggle-state');
+const improveModelSection = document.getElementById('model-improvement-panel-toggle');
+
+
+const modelImproveCheckbox = document.getElementById('model-improve-checkbox');
+
 let isProceeding = false;
 
 // Toggle panel visibility
@@ -112,7 +125,10 @@ function createPIIBox(type, instances) {
         restoreIcon.addEventListener('click', () => {
             const textarea = document.getElementById('user-input');
             // Replace specific PII text with the original
-            updateTextareaWithPreservedIndices(textarea, textarea.value, [{ start, end }], () => text);        
+            updateTextareaWithPreservedIndices(textarea, textarea.value, [{ start, end }], () => text);
+            
+            dropdownButton.textContent = 'Anonymize ▼';
+            dropdownButton.style.backgroundColor = '#f0f0f0';
         });
 
         const dropdownContainer = document.createElement('div');
@@ -123,6 +139,7 @@ function createPIIBox(type, instances) {
         dropdownButton.classList.add('pii-action-button');
         dropdownButton.setAttribute('data-start', start);
         dropdownButton.setAttribute('data-end', end);
+        dropdownButton.setAttribute('data-type', type);
 
         const dropdownMenu = document.createElement('div');
         dropdownMenu.classList.add('dropdown-menu');
@@ -145,6 +162,16 @@ function createPIIBox(type, instances) {
 
                 // Update textarea for this instance
                 updateTextareaWithPreservedIndices(textarea, textarea.value, [{ start, end }], replaceFn);
+
+                // Change the text and style of the 'anonymize' button
+                dropdownButton.textContent = (() => {
+                    if (action === 'Retract') return 'Retracted ▼';
+                    if (action === 'Fake') return 'Faked ▼';
+                    if (action === 'Generalize') return 'Generalized ▼';
+                    return action; // Default action
+                })();
+                
+                dropdownButton.style.backgroundColor = '#e3f1e4'; // Change button color
 
                 dropdownMenu.style.display = 'none'; // Close the dropdown after action
             });
@@ -214,6 +241,27 @@ function createPIIBox(type, instances) {
             // Update textarea for all instances
             updateTextareaWithPreservedIndices(textarea, textarea.value, instances, replaceFn);
 
+            // Update the text and background color for **all** anonymize buttons of the selected PII type
+            document.querySelectorAll(`.pii-action-button[data-type="${type}"]`).forEach(button => {
+                button.textContent = (() => {
+                    if (action === 'Retract') return 'Retracted ▼';
+                    if (action === 'Fake') return 'Faked ▼';
+                    if (action === 'Generalize') return 'Generalized ▼';
+                    return action;
+                })();;
+                button.style.backgroundColor = '#e3f1e4';
+            });
+
+            // Update the "Anonymize All" button as well
+            anonymizeAllButton.textContent = (() => {
+                if (action === 'Retract') return 'Retracted All ▼';
+                if (action === 'Fake') return 'Faked All ▼';
+                if (action === 'Generalize') return 'Generalized All ▼';
+                return action; // Default action
+            })();
+            
+            anonymizeAllButton.style.backgroundColor = '#e3f1e4';
+
             anonymizeAllMenu.style.display = 'none'; // Close the dropdown after action
         });
 
@@ -245,6 +293,15 @@ function createPIIBox(type, instances) {
         const textarea = document.getElementById('user-input');
         // Replace all instances of the PII type with their original text
         updateTextareaWithPreservedIndices(textarea, textarea.value, instances, (_, index) => instances[index].text);    
+    
+        anonymizeAllButton.textContent = 'Anonymize All ▼';
+        anonymizeAllButton.style.backgroundColor = '#f0f0f0';
+
+        // Reset only the anonymize buttons for this specific PII type
+        document.querySelectorAll(`.pii-action-button[data-type="${type}"]`).forEach(button => {
+            button.textContent = 'Anonymize ▼';  // Default text
+            button.style.backgroundColor = '#f0f0f0'; // Reset background color
+        });
     });
 
     content.appendChild(bulkActionsContainer);
@@ -434,7 +491,9 @@ proceedSendBtn.addEventListener('click', () => {
 async function sendUserMessage(message) {
     const userMessageElement = document.createElement('div');
     userMessageElement.classList.add('chat-message', 'user-message');
-    userMessageElement.textContent = message;
+    
+    userMessageElement.innerHTML = message.replace(/\n/g, '<br>');
+ 
     chatPanel.appendChild(userMessageElement);
 
     // Clear input field and adjust UI
@@ -641,7 +700,7 @@ userInput.addEventListener('input', () => {
             piiNoticePanel.classList.add('inactive');
             const inactiveMessage = document.createElement('div');
             inactiveMessage.classList.add('inactive-message');
-            inactiveMessage.textContent = "Privacy warning inactive due to manual edits. Click Enter or Send button to update it.";
+            inactiveMessage.textContent = "Privacy warning inactive due to manual edits. Send again to update it.";
             piiNoticePanel.appendChild(inactiveMessage);
         }
     }
@@ -763,3 +822,57 @@ privacyTipsPopup.addEventListener('click', (event) => {
     // Log the interaction with detailed element info
     logInteraction("privacyTipsPopup", "click", JSON.stringify(elementDetails));
 });
+
+
+document.querySelector('.opt-in-out-btn').addEventListener('click', () => {
+    settingsPopup.style.display = 'block';
+    overlay.classList.add('active');
+
+    // Add blinking effect
+    improveModelSection.classList.add('pulse');
+
+    // Remove the blinking class after 3 blinks (3 seconds)
+    setTimeout(() => {
+        improveModelSection.classList.remove('pulse');
+    }, 3000);
+  });
+  
+  // Close Settings Popup
+  closeSettings.addEventListener('click', () => {
+    settingsPopup.style.display = 'none';
+    overlay.classList.remove('active');
+  });
+  
+  // Show Model Improvement Popup when clicking on either 'section-title' or 'section-toggle'
+  document.querySelectorAll('.improve-model-cursor').forEach((element) => {
+    element.addEventListener('click', () => {
+      modelPopup.style.display = 'block';
+      overlay.classList.add('active');
+      overlay.style.zIndex = '1310';
+    });
+  });
+  
+  // Update Toggle State in Data Controls
+  modelImproveCheckbox.addEventListener('change', (e) => {
+    toggleState.innerHTML = e.target.checked ? 'On &#8250;' : 'Off &#8250;';
+  });
+  
+  // Done Button in Model Popup
+  modelDoneBtn.addEventListener('click', () => {
+    modelPopup.style.display = 'none';
+    overlay.style.zIndex = '1000';
+  });
+  
+  // Overlay closes all popups
+  overlay.addEventListener('click', () => {
+    if (modelPopup.style.display != 'none'){
+        modelPopup.style.display = 'none';
+        overlay.style.zIndex = '1000';
+        return;
+    }
+    if (settingsPopup.style.display != 'none'){
+        settingsPopup.style.display = 'none';
+        overlay.classList.remove('active');
+        return;
+    }
+  });

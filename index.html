@@ -51,8 +51,7 @@
 
   </div>
   
-  <!-- Toggle Button to Hide/Show Panel -->
-
+  <!-- Privacy Notice Panel -->
   <div class="pii-notice-panel" id="piiNoticePanel">
     <div class="pii-panel-header">
       <div class="icon-container">
@@ -65,7 +64,7 @@
     </div>
     <div class="pii-panel-content">
       <p class="info-text">
-        Including or excluding sensitive information usually does not affect chatbot's utility but may risk your privacy and safety!
+        Including sensitive information rarely enhances a chatbot's utility but can risk your privacy and safety.
       </p>
       <h4>Got Questions?</h4>
       <button class="privacy-tips-btn">
@@ -80,20 +79,99 @@
       </button>    
       <div class="anonymization-section">
         <div class="anonymization-section-title">Use this panel to anonymize sensitive information</div>
-        <div class="anonymization-section-warning">&#9888; This list might not cover all sensitive information in your prompt!</div>
         <div class="anonymization-section-body">
         </div>
+        <div class="anonymization-section-warning">&#9888; These might not be all the sensitive info in your prompt!</div>
       </div>
       <div class="other-actions">
         <div class="other-actions-title">Other actions to protect your information</div>
         <div class="other-actions-body">
-          <button class="opt-in-out-btn">Opt in or out of sharing your content for model training</button>
+          <button class="opt-in-out-btn">Opt in or out of sharing your content for model training &#8250;</button>
         </div>
       </div>
 
       <div class="proceed-button-container">
-        <button class="proceed-send-btn" id="proceedSendBtn">Proceed with Sending...</button>
+        <button class="proceed-send-btn" id="proceedSendBtn">Proceed with sending...</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Settings Popup -->
+  <div id="settings-popup" class="popup">
+    <div class="popup-header">
+      <h3>Settings</h3>
+      <button id="close-settings" class="setting-close-popup-btn">&times;</button>
+    </div>
+    <hr />
+    <div class="settings-popup-content">
+      <!-- Settings Menu -->
+      <ul class="settings-menu">
+        <li class="menu-item">General</li>
+        <li class="menu-item">Personalization</li>
+        <li class="menu-item">Speech</li>
+        <li id="data-controls-btn" class="menu-item active data-controls">Data controls</li>
+        <li class="menu-item">Builder profile</li>
+        <li class="menu-item">Connected apps</li>
+        <li class="menu-item">Security</li>
+        <li class="menu-item">Subscription</li>
+      </ul>
+
+      <!-- Data Controls Content -->
+      <div id="data-controls-panel" class="settings-panel">
+        <div class="panel-section">
+          <div class="section-header" id="model-improvement-panel-toggle">
+            <p class="section-title improve-model-cursor">Improve the model for everyone</p>
+            <p class="section-toggle improve-model-cursor" id="toggle-state">Off  &#8250;</p>
+          </div>
+          <hr />
+        </div>
+
+        <div class="panel-section">
+          <div class="section-row">
+            <p>Shared links</p>
+            <button id="manage-links" class="btn small">Manage</button>
+          </div>
+          <hr />
+        </div>
+
+        <div class="panel-section">
+          <div class="section-row">
+            <p>Export data</p>
+            <button id="export-data" class="btn small">Export</button>
+          </div>
+          <hr />
+        </div>
+
+        <div class="panel-section">
+          <div class="section-row">
+            <p>Delete account</p>
+            <button id="delete-account" class="btn delete-btn">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Model Improvement Popup -->
+  <div id="model-popup" class="popup model-popup">
+    <div class="popup-header">
+      <h3>Model improvement</h3>
+    </div>
+    <hr />
+    <div class="model-improv-popup-content">
+      <div class="toggle-row">
+        <h3 class="popup-title">Improve the model for everyone</h3>
+        <label class="switch">
+          <input type="checkbox" id="model-improve-checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="popup-description">
+        Allow your content to be used to train our models, which makes ChatGPT better for you and everyone who uses it. 
+        We take steps to protect your privacy. <a href="#" class="learn-more">Learn more</a>
+      </p>
+      <button id="model-done-btn" class="btn done-btn">Done</button>
     </div>
   </div>
 
