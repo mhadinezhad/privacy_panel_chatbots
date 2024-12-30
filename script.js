@@ -49,17 +49,9 @@ const proceedSendBtn = document.getElementById('proceedSendBtn');
 const anonymizationSectionBody = document.querySelector('.anonymization-section-body');
 const togglePanelButton = document.getElementById('togglepanelbutton');
 const overlay = document.getElementById('overlay');
-const settingsPopup = document.getElementById('settings-popup');
-const dataControlsBtn = document.getElementById('data-controls-btn');
-const closeSettings = document.getElementById('close-settings');
-const modelPopup = document.getElementById('model-popup');
-const modelDoneBtn = document.getElementById('model-done-btn');
-const closeModelPopup = document.getElementById('close-model-popup');
-const toggleState = document.getElementById('toggle-state');
-const improveModelSection = document.getElementById('model-improvement-panel-toggle');
-
-
-const modelImproveCheckbox = document.getElementById('model-improve-checkbox');
+const privacyTipsPopup = document.getElementById('privacyTipsPopup');
+const closePopupBtn = document.getElementById('closePopupBtn');
+const privacyTipsBtn = document.querySelector('.privacy-tips-btn');
 
 let isProceeding = false;
 
@@ -442,7 +434,6 @@ function handlePIIDetection(userMessage) {
 }
 
 // Event listener for the send button
-
 sendButton.addEventListener('click', () => {
     if (piiNoticePanel.classList.contains('inactive')) {
         // Clear the inactive state and regenerate the notice
@@ -681,9 +672,6 @@ function cleanUpMarkdown(markdown) {
         .replace(/ {2,}/g, ' '); // Collapse multiple spaces
 }
 
-//  const apiKey = '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';
-
-
 // Adjust the input height only when text overflows to a new line
 userInput.addEventListener('input', () => {
     userInput.style.height = '30px';
@@ -716,11 +704,6 @@ userInput.addEventListener('keypress', (event) => {
 
 // Initial call to set button state
 toggleSendButtonState();
-
-// Privacy Tips Pop-up Panel
-const privacyTipsPopup = document.getElementById('privacyTipsPopup');
-const closePopupBtn = document.getElementById('closePopupBtn');
-const privacyTipsBtn = document.querySelector('.privacy-tips-btn');
 
 // Show the pop-up and overlay when the privacy tips button is clicked
 privacyTipsBtn.addEventListener('click', () => {
@@ -822,57 +805,3 @@ privacyTipsPopup.addEventListener('click', (event) => {
     // Log the interaction with detailed element info
     logInteraction("privacyTipsPopup", "click", JSON.stringify(elementDetails));
 });
-
-
-document.querySelector('.opt-in-out-btn').addEventListener('click', () => {
-    settingsPopup.style.display = 'block';
-    overlay.classList.add('active');
-
-    // Add blinking effect
-    improveModelSection.classList.add('pulse');
-
-    // Remove the blinking class after 3 blinks (3 seconds)
-    setTimeout(() => {
-        improveModelSection.classList.remove('pulse');
-    }, 3000);
-  });
-  
-  // Close Settings Popup
-  closeSettings.addEventListener('click', () => {
-    settingsPopup.style.display = 'none';
-    overlay.classList.remove('active');
-  });
-  
-  // Show Model Improvement Popup when clicking on either 'section-title' or 'section-toggle'
-  document.querySelectorAll('.improve-model-cursor').forEach((element) => {
-    element.addEventListener('click', () => {
-      modelPopup.style.display = 'block';
-      overlay.classList.add('active');
-      overlay.style.zIndex = '1310';
-    });
-  });
-  
-  // Update Toggle State in Data Controls
-  modelImproveCheckbox.addEventListener('change', (e) => {
-    toggleState.innerHTML = e.target.checked ? 'On &#8250;' : 'Off &#8250;';
-  });
-  
-  // Done Button in Model Popup
-  modelDoneBtn.addEventListener('click', () => {
-    modelPopup.style.display = 'none';
-    overlay.style.zIndex = '1000';
-  });
-  
-  // Overlay closes all popups
-  overlay.addEventListener('click', () => {
-    if (modelPopup.style.display != 'none'){
-        modelPopup.style.display = 'none';
-        overlay.style.zIndex = '1000';
-        return;
-    }
-    if (settingsPopup.style.display != 'none'){
-        settingsPopup.style.display = 'none';
-        overlay.classList.remove('active');
-        return;
-    }
-  });

@@ -1,16 +1,29 @@
-// const nlp = require('compromise');
-
+// Updated on Dec 18 2024
 function findDatesOfBirth(text) {
-    const dateRegex = /\b(\d{1,2})(st|nd|rd|th)?\s*(of\s+)?(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\s*(,?\s*\d{4})\b|\b(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\s*(\d{1,2})(st|nd|rd|th)?\s*(,?\s*\d{4})?\b|\b(\d{1,4})[-/. ](\d{1,2})[-/. ](\d{1,4})\b/gi;
-    const contextRegex = /\b(bday|born|date of birth|dateofbirth|day of birth|dob|age|birthdate|birth date|birthday|birth day|was born on|born on)\b/i;
-    // how about cases when they say I'm 27 years old?
+    const dateRegex = new RegExp([
+        // 1. DD(st|nd|rd|th)? (of )?Month YYYY (All parts required)
+        "\\b(\\d{1,2})(st|nd|rd|th)?\\s*(of\\s+)?(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\\s*,?\\s*(\\d{4})\\b",
+        // 2. Month DD(st|nd|rd|th)? YYYY (All parts required)
+        "\\b(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\\s*(\\d{1,2})(st|nd|rd|th)?\\s*,?\\s*(\\d{4})\\b",
+        // 3. Numeric formats (All parts required)
+        //    DD[-/.]MM[-/.]YYYY or YYYY[-/.]MM[-/.]DD
+        "\\b(\\d{1,2})[-/. ](\\d{1,2})[-/. ](\\d{4})\\b",
+        "\\b(\\d{4})[-/. ](\\d{1,2})[-/. ](\\d{1,2})\\b",
+        // 4. YYYY Month DD(st|nd|rd|th)? (All parts required)
+        "\\b(\\d{4})\\s+(January|Jan|February|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sept|October|Oct|November|Nov|December|Dec)\\s+(\\d{1,2})(st|nd|rd|th)?\\b"
+    ].join("|"), "gi");
+
+    const contextRegex = /\b(bday|born|date of birth|dateofbirth|day of birth|dob|birthdate|birth date|birthday|birth day|was born on|born on|natal day|he was born|she was born|his birth|her birth|his birth date|her birth date)\b/i;
+
     const dates = [];
     let match;
     while ((match = dateRegex.exec(text)) !== null) {
         const date = match[0];
-        const beforeDate = text.slice(Math.max(match.index - 50, 0), match.index);
-        const afterDate = text.slice(match.index + date.length, Math.min(match.index + date.length + 50, text.length));
+        const beforeDate = text.slice(Math.max(match.index - 60, 0), match.index);
+        const afterDate = text.slice(match.index + date.length, Math.min(match.index + date.length + 60, text.length));
         const surroundingText = beforeDate + afterDate;
+
+        // Only push if the surrounding text indicates a birth context
         if (contextRegex.test(surroundingText)) {
             dates.push({
                 text: date,
@@ -21,6 +34,7 @@ function findDatesOfBirth(text) {
     }
     return dates;
 }
+
 
 function findPII(text) {
     const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
@@ -63,7 +77,7 @@ function findPII(text) {
 
 
 function extractNames(text) {
-    const doc = nlp(text); // Assuming the Compromise NLP library
+    const doc = nlp(text);
     const names = [];
     const seenIndices = new Set(); // Track processed positions
 
@@ -93,48 +107,66 @@ function extractNames(text) {
     return names;
 }
 
-
-
-
+// Updated on Dec 30th
 function extractAddresses(text) {
     const addresses = [];
-    const streetRegex = /\b\d{1,5}\s(?:[A-Za-z0-9.,#\- ]+)\s(?:St|Street|Rd|Road|Ave|Avenue|Blvd|Boulevard|Ln|Lane|Dr|Drive|Pl|Place|Terr|Terrace|Ct|Court|Cres|Crescent|Pkwy|Parkway|Cir|Circle|Hwy|Highway|Way|Wy|Sq|Square|Tech Park|Hill)\b(?:,?\s*(?:Apt|Building|lot|Bldg|Level|lvl|lv|Block|blk|Apartment|Suite|Ste|Unit|Fl|Floor|#)?\s*[A-Za-z0-9\-]*)?/gi;
-    const cityStateRegex = /\b[A-Z][a-zA-Z\s]*,\s*[A-Z]{2}\b/gi;
-    const zipRegex = /\b\d{5}(?:-\d{4})?\b/gi;
-    const addressPattern = new RegExp(`${streetRegex.source},?\\s*${cityStateRegex.source},?\\s*${zipRegex.source}`, 'gi');
+
+    const streetRegex = new RegExp(
+        "\\b\\d{1,5}\\s" +                       // House number
+        "(?:[A-Za-z0-9.,'\\-]+\\s)*" +           // Street name
+        "[A-Za-z]{2,}\\b" +                      // Require at least one word with two or more letters
+        "\\s" +                                  // Space before suffix
+        "(?:St|St\\.|Street|Rd|Rd\\.|Road|Ave|Ave\\.|Av|Av\\.|Avenue|" +
+        "Blvd|Boulevard|Ln|Ln\\.|Lane|Dr|Dr\\.|Drive|Pl|Pl\\.|Place|" +
+        "Terr|Terr\\.|Terrace|Ct|Ct\\.|Court|Cres|Crescent|Pkwy|Parkway|" +
+        "Cir|Circle|Hwy|Hwy\\.|Highway|Way|Wy|Sq|Sq\\.|Square)" +
+        "\\b" +
+        "(?:,?\\s*(?:Apt|Unit|Suite|Fl|Floor|#)\\s*\\w+)?", // Optional unit details
+        "i"
+    );
+
+    const cityStateRegex = [
+        "[A-Za-z]+(?:\\s+[A-Za-z]+)*",            // City name (multiple words)
+        ",?\\s*",                                 // Optional comma and whitespace
+        "(?:[A-Z]{2}|[A-Za-z]+(?:\\s+[A-Za-z]+)*)" // State (2-letter code or full name)
+    ].join("");
+
+    const zipRegex = "\\b\\d{5}(?:-\\d{4})?\\b"; // 5-digit ZIP, optional 4-digit extension
+
+    const addressPattern = new RegExp(
+        "(?:^|(?<=[\\n\\s,.]))" +                // Ensure address starts after whitespace, newline, or punctuation
+        "(?<![a-zA-Z0-9,.])" +                   // Avoid extra preceding content that isn't a valid delimiter
+        streetRegex.source +                     // Match street and optional unit
+        "[,\\s]+" +                              // Separator
+        cityStateRegex +                         // Match city and state
+        "[,\\s]+" +                              // Separator
+        zipRegex +                               // Match ZIP code
+        "(?=$|[\\n\\s,.])",                      // Ensure address ends with whitespace, newline, or punctuation
+        "gi"
+    );
+
     let match;
-
     while ((match = addressPattern.exec(text)) !== null) {
-        addresses.push({
-            text: match[0],
-            start: match.index,
-            end: match.index + match[0].length
-        });
-    }
-    const filteredAddresses = addresses.filter(address => {
-        const businessKeywords = /\b(Suite|Ste|Office|Branch|Headquarters|Corp|Corporation|Business|Center|Plaza|Mall|Company|Co|Factory|Outlet|Store|Market|Gallery)\b/i;
+        let extracted = match[0].trim();
 
-        if (businessKeywords.test(address)) {
-            return false;
+        // Ensure only clean address data is captured
+        if (extracted.match(streetRegex) && extracted.match(zipRegex)) {
+            addresses.push({
+                text: extracted,
+                start: match.index,
+                end: match.index + match[0].length
+            });
         }
-        const addressStartIndex = text.indexOf(address);
-        const surroundingText = text.substring(Math.max(0, addressStartIndex - 50), addressStartIndex + address.length + 50);
-        const contextKeywords = /\b(office|business|headquarters|branch|store|facility|company)\b/i;
-        if (contextKeywords.test(surroundingText)) {
-            return false;
+
+        if (addressPattern.lastIndex === match.index) {
+            addressPattern.lastIndex++;
         }
-        const piiContextKeywords = /\b(home|residence|private|personal|house|living|lives|apt|apartment)\b/i;
-        if (piiContextKeywords.test(surroundingText)) {
-            return true;
-        }
-        const residentialKeywords = /\b(Apartment|Apt|Residence|Home)\b/i;
-        if (residentialKeywords.test(address)) {
-            return true;
-        }
-        return true;
-    });
-    return filteredAddresses;
+    }
+
+    return addresses;
 }
+
+
 
 function findSSNs(text) {
     const ssnRegex = /\b\d{3}[-.\s/]*\d{2}[-.\s/]*\d{4}\b/g;
@@ -176,7 +208,6 @@ function findSSNs(text) {
     return ssns;
 }
 
-
 // Combined function to extract all PII
 function extractAllPII(text) {
     const datesOfBirth = findDatesOfBirth(text);
@@ -194,23 +225,3 @@ function extractAllPII(text) {
         ssns
     };
 }
-
-
-// Example usage
-// const text = `
-
-// Hi ChatGPT! I need help with organizing a surprise party for my friend Sarah. Her birthday is on August 12, 1993, and I was thinking of sending out invitations to some of her friends. Could you help me draft an invitation email?
-
-// Also, I have a list of her friends with their emails:
-
-// John Doe: john.doe@example.com
-// Jane Smith: jane.smith@anothermail.com
-// Mike Johnson: mike.johnson@workplace.com
-// The party will be at Sarah's place, 123 Main Street, Apartment 7B, Hometown, NY 12345. Should I include her phone number in the invitation for RSVPs? It's (123) 456-7890.
-
-// Lastly, I've set up a Wi-Fi network for the party, and the MAC address is 00:1A:2B:3C:4D:5E. Could you remind me to share the password with the guests?
-
-// `;
-
-// const allPII = extractAllPII(text);
-// console.log("All PII:", allPII);

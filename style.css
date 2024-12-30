@@ -1123,7 +1123,7 @@ body.panel-collapsed .toggle-panel-button {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #e0e0e0; /* Default off state */
+    background-color: #0b57d0; /* Default on state */
     border-radius: 20px;
     transition: 0.3s;
   }
@@ -1133,7 +1133,7 @@ body.panel-collapsed .toggle-panel-button {
     content: "";
     height: 16px;
     width: 16px;
-    left: 2px;
+    left: 18px;
     bottom: 2px;
     background-color: white;
     border-radius: 50%;
@@ -1141,11 +1141,11 @@ body.panel-collapsed .toggle-panel-button {
   }
   
   .model-popup input:checked + .slider {
-    background-color: #0b57d0; /* Blue when toggled */
+    background-color: #e0e0e0;
   }
   
   .model-popup input:checked + .slider::before {
-    transform: translateX(16px);
+    transform: translateX(-16px);
   }
   
   /* Description Text */
