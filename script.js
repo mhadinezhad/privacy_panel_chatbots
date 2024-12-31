@@ -98,6 +98,105 @@ function createPIIBox(type, instances) {
     content.classList.add('pii-details');
     content.style.display = 'none';
 
+
+    const bulkActionsContainer = document.createElement('div');
+    bulkActionsContainer.classList.add('pii-bulk-actions');
+
+    // Create "Anonymize All" dropdown
+    const anonymizeAllContainer = document.createElement('div');
+    anonymizeAllContainer.classList.add('pii-dropdown-container');
+
+    const anonymizeAllButton = document.createElement('button');
+    anonymizeAllButton.textContent = 'Anonymize All ▼';
+    anonymizeAllButton.classList.add('pii-bulk-button');
+
+    const anonymizeAllMenu = document.createElement('div');
+    anonymizeAllMenu.classList.add('dropdown-menu');
+    anonymizeAllMenu.style.display = 'none';
+
+    const bulkActions = ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+    bulkActions.forEach(action => {
+        const actionItem = document.createElement('button');
+        actionItem.textContent = action;
+        actionItem.classList.add('dropdown-item');
+
+        // Add event listeners for bulk actions
+        actionItem.addEventListener('click', () => {
+            const textarea = document.getElementById('user-input');
+            const replaceFn = (original, index) => {
+                if (action === 'Retract') return `[${type}]`;
+                if (action === 'Fake') return generateFake(type);
+                if (action === 'Generalize') return generalizePII(type, original);
+            };
+
+            // Update textarea for all instances
+            updateTextareaWithPreservedIndices(textarea, textarea.value, instances, replaceFn);
+
+            document.querySelectorAll(`.pii-action-button[data-type="${type}"]`).forEach(button => {
+                button.textContent = (() => {
+                    if (action === 'Retract') return 'Retracted ▼';
+                    if (action === 'Fake') return 'Faked ▼';
+                    if (action === 'Generalize') return 'Generalized ▼';
+                    return action;
+                })();;
+                button.style.backgroundColor = '#e3f1e4';
+            });
+
+            // Update the "Anonymize All" button as well
+            anonymizeAllButton.textContent = (() => {
+                if (action === 'Retract') return 'Retracted All ▼';
+                if (action === 'Fake') return 'Faked All ▼';
+                if (action === 'Generalize') return 'Generalized All ▼';
+                return action; // Default action
+            })();
+            
+            anonymizeAllButton.style.backgroundColor = '#e3f1e4';
+
+            anonymizeAllMenu.style.display = 'none'; // Close the dropdown after action
+        });
+
+        anonymizeAllMenu.appendChild(actionItem);
+    });
+
+    anonymizeAllButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        // Toggle dropdown visibility
+        const isVisible = anonymizeAllMenu.style.display === 'block';
+        closeAllDropdowns();
+        if (!isVisible) {
+            anonymizeAllMenu.style.display = 'block';
+        }
+    });
+
+
+    anonymizeAllContainer.appendChild(anonymizeAllButton);
+    anonymizeAllContainer.appendChild(anonymizeAllMenu);
+    bulkActionsContainer.appendChild(anonymizeAllContainer);
+
+    // Add "Restore All" button
+    const restoreAllButton = document.createElement('button');
+    restoreAllButton.textContent = 'Restore All';
+    restoreAllButton.classList.add('pii-bulk-button');
+    bulkActionsContainer.appendChild(restoreAllButton);
+
+    content.appendChild(bulkActionsContainer);
+
+    restoreAllButton.addEventListener('click', () => {
+        const textarea = document.getElementById('user-input');
+        // Replace all instances of the PII type with their original text
+        updateTextareaWithPreservedIndices(textarea, textarea.value, instances, (_, index) => instances[index].text);    
+    
+        anonymizeAllButton.textContent = 'Anonymize All ▼';
+        anonymizeAllButton.style.backgroundColor = '#f0f0f0';
+
+        // Reset only the anonymize buttons for this specific PII type
+        document.querySelectorAll(`.pii-action-button[data-type="${type}"]`).forEach(button => {
+            button.textContent = 'Anonymize ▼';  // Default text
+            button.style.backgroundColor = '#f0f0f0'; // Reset background color
+        });
+    });
+
+
     instances.forEach(({ text, start, end }) => {
         const instanceElement = document.createElement('div');
         instanceElement.classList.add('pii-instance');
@@ -137,7 +236,9 @@ function createPIIBox(type, instances) {
         dropdownMenu.classList.add('dropdown-menu');
         dropdownMenu.style.display = 'none';
 
-        const actions = ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+        // const actions = ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+        const actions = type === 'Phone Number' ? ['Retract', 'Fake'] : ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+
         actions.forEach(action => {
             const actionItem = document.createElement('button');
             actionItem.textContent = action;
@@ -199,104 +300,6 @@ function createPIIBox(type, instances) {
         content.appendChild(instanceElement);
 
     });
-
-    const bulkActionsContainer = document.createElement('div');
-    bulkActionsContainer.classList.add('pii-bulk-actions');
-
-    // Create "Anonymize All" dropdown
-    const anonymizeAllContainer = document.createElement('div');
-    anonymizeAllContainer.classList.add('pii-dropdown-container');
-
-    const anonymizeAllButton = document.createElement('button');
-    anonymizeAllButton.textContent = 'Anonymize All ▼';
-    anonymizeAllButton.classList.add('pii-bulk-button');
-
-    const anonymizeAllMenu = document.createElement('div');
-    anonymizeAllMenu.classList.add('dropdown-menu');
-    anonymizeAllMenu.style.display = 'none';
-
-    const bulkActions = ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
-    bulkActions.forEach(action => {
-        const actionItem = document.createElement('button');
-        actionItem.textContent = action;
-        actionItem.classList.add('dropdown-item');
-
-        // Add event listeners for bulk actions
-        actionItem.addEventListener('click', () => {
-            const textarea = document.getElementById('user-input');
-            const replaceFn = (original, index) => {
-                if (action === 'Retract') return `[${type}]`;
-                if (action === 'Fake') return generateFake(type);
-                if (action === 'Generalize') return generalizePII(type, original);
-            };
-
-            // Update textarea for all instances
-            updateTextareaWithPreservedIndices(textarea, textarea.value, instances, replaceFn);
-
-            // Update the text and background color for **all** anonymize buttons of the selected PII type
-            document.querySelectorAll(`.pii-action-button[data-type="${type}"]`).forEach(button => {
-                button.textContent = (() => {
-                    if (action === 'Retract') return 'Retracted ▼';
-                    if (action === 'Fake') return 'Faked ▼';
-                    if (action === 'Generalize') return 'Generalized ▼';
-                    return action;
-                })();;
-                button.style.backgroundColor = '#e3f1e4';
-            });
-
-            // Update the "Anonymize All" button as well
-            anonymizeAllButton.textContent = (() => {
-                if (action === 'Retract') return 'Retracted All ▼';
-                if (action === 'Fake') return 'Faked All ▼';
-                if (action === 'Generalize') return 'Generalized All ▼';
-                return action; // Default action
-            })();
-            
-            anonymizeAllButton.style.backgroundColor = '#e3f1e4';
-
-            anonymizeAllMenu.style.display = 'none'; // Close the dropdown after action
-        });
-
-        anonymizeAllMenu.appendChild(actionItem);
-    });
-
-    anonymizeAllButton.addEventListener('click', (event) => {
-        event.stopPropagation();
-        // Toggle dropdown visibility
-        const isVisible = anonymizeAllMenu.style.display === 'block';
-        closeAllDropdowns();
-        if (!isVisible) {
-            anonymizeAllMenu.style.display = 'block';
-        }
-    });
-
-
-    anonymizeAllContainer.appendChild(anonymizeAllButton);
-    anonymizeAllContainer.appendChild(anonymizeAllMenu);
-    bulkActionsContainer.appendChild(anonymizeAllContainer);
-
-    // Add "Restore All" button
-    const restoreAllButton = document.createElement('button');
-    restoreAllButton.textContent = 'Restore All';
-    restoreAllButton.classList.add('pii-bulk-button');
-    bulkActionsContainer.appendChild(restoreAllButton);
-
-    restoreAllButton.addEventListener('click', () => {
-        const textarea = document.getElementById('user-input');
-        // Replace all instances of the PII type with their original text
-        updateTextareaWithPreservedIndices(textarea, textarea.value, instances, (_, index) => instances[index].text);    
-    
-        anonymizeAllButton.textContent = 'Anonymize All ▼';
-        anonymizeAllButton.style.backgroundColor = '#f0f0f0';
-
-        // Reset only the anonymize buttons for this specific PII type
-        document.querySelectorAll(`.pii-action-button[data-type="${type}"]`).forEach(button => {
-            button.textContent = 'Anonymize ▼';  // Default text
-            button.style.backgroundColor = '#f0f0f0'; // Reset background color
-        });
-    });
-
-    content.appendChild(bulkActionsContainer);
 
     header.addEventListener('click', () => {
         const isVisible = content.style.display === 'block';
@@ -365,6 +368,8 @@ function generateFake(type) {
             return 'January 1, 1990';
         case 'SSN':
             return '123-45-6789';
+        case 'Phone Number':
+            return '(555) 555-5555';
         default:
             return '[Fake Data]';
     }
@@ -393,7 +398,7 @@ function handlePIIDetection(userMessage) {
     }
 
     const piiData = extractAllPII(userMessage);
-    const { datesOfBirth, emails, macAddresses, names, addresses, ssns } = piiData;
+    const { datesOfBirth, emails, macAddresses, names, addresses, ssns, phoneNumbers } = piiData;
     anonymizationSectionBody.innerHTML = ''; // Clear previous PII
 
     let hasPII = false;
@@ -419,6 +424,10 @@ function handlePIIDetection(userMessage) {
     }
     if (ssns.length > 0) {
         createPIIBox('SSN', ssns);
+        hasPII = true;
+    }
+    if (phoneNumbers.length > 0) {
+        createPIIBox('Phone Number', phoneNumbers);
         hasPII = true;
     }
 
@@ -751,18 +760,59 @@ function locateAndHighlight(start, end) {
     const textarea = document.getElementById('user-input');
     textarea.focus();
 
-    // Adjust for newlines to align indices with the textarea's interpretation
-    const adjustedStart = adjustIndexForNewlines(textarea.value, start);
-    const adjustedEnd = adjustIndexForNewlines(textarea.value, end);
-
     // Highlight the selected text
-    textarea.setSelectionRange(adjustedStart, adjustedEnd);
+    textarea.setSelectionRange(start, end);
 
-    // Scroll to the highlighted text
-    const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight);
-    const linesAbove = (textarea.value.slice(0, adjustedStart).match(/\n/g) || []).length;
-    textarea.scrollTop = lineHeight * linesAbove;
+    // Calculate the target position
+    const targetPosition = calculatePixelPosition(textarea, start);
+
+    // Determine the maximum scrollable position
+    const maxScrollTop = textarea.scrollHeight - textarea.clientHeight;
+
+    // Adjust the target position to ensure it doesn’t exceed the maximum
+    const adjustedPosition = Math.min(targetPosition, maxScrollTop);
+
+    // Smoothly scroll to the target position
+    textarea.scrollTo({
+        top: adjustedPosition,
+        behavior: 'smooth',
+    });
 }
+
+
+/**
+ * Calculate the pixel position of a character in the textarea
+ * @param {HTMLTextAreaElement} textarea - The textarea element
+ * @param {number} index - The character index
+ * @returns {number} - The pixel offset for the scroll position
+ */
+function calculatePixelPosition(textarea, index) {
+    // Create a hidden div styled exactly like the textarea
+    const hiddenDiv = document.createElement('div');
+    hiddenDiv.style.position = 'absolute';
+    hiddenDiv.style.visibility = 'hidden';
+    hiddenDiv.style.whiteSpace = 'pre-wrap';
+    hiddenDiv.style.wordWrap = 'break-word';
+    hiddenDiv.style.fontFamily = 'Inter, sans-serif';
+    hiddenDiv.style.fontSize = '14px';
+    hiddenDiv.style.lineHeight = '25px';
+    hiddenDiv.style.padding = '5px 15px';
+    hiddenDiv.style.width = `${textarea.clientWidth}px`; // Use clientWidth for accurate width
+    hiddenDiv.style.boxSizing = 'border-box'; // Match textarea box-sizing
+
+    // Set content up to the target index
+    hiddenDiv.textContent = textarea.value.slice(0, index);
+
+    // Append the hidden div to measure the height
+    document.body.appendChild(hiddenDiv);
+    const position = hiddenDiv.offsetHeight;
+    document.body.removeChild(hiddenDiv);
+
+    const offsetAdjustment = 70; // Adjust based on testing
+    return position - offsetAdjustment;
+}
+
+
 
 // Helper function to adjust indices for newlines
 function adjustIndexForNewlines(text, index) {

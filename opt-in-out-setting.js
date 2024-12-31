@@ -43,14 +43,17 @@ document.querySelector('.opt-in-out-btn').addEventListener('click', () => {
   // Done Button in Model Popup
   modelDoneBtn.addEventListener('click', () => {
     modelPopup.style.display = 'none';
-    overlay.style.zIndex = '1000';
+    overlay.style.zIndex = '1020';
+
+    const isChecked = modelImproveCheckbox.checked;
+    toggleState.innerHTML = isChecked ? 'On &#8250;' : 'Off &#8250;';
   });
   
   // Overlay closes all popups
   overlay.addEventListener('click', () => {
     if (modelPopup.style.display != 'none'){
         modelPopup.style.display = 'none';
-        overlay.style.zIndex = '1000';
+        overlay.style.zIndex = '1020';
         return;
     }
     if (settingsPopup.style.display != 'none'){

@@ -52,7 +52,7 @@ function findPII(text) {
             emails.push({
                 text: match[0],
                 start: match.index,
-                end: match.index + match[0].length
+                end: match.index + match[0].length + 1
             });
         }
     }
@@ -65,7 +65,7 @@ function findPII(text) {
         macAddresses.push({
             text: match[0],
             start: match.index,
-            end: match.index + match[0].length
+            end: match.index + match[0].length + 1
         });
     }
 
@@ -154,7 +154,7 @@ function extractAddresses(text) {
             addresses.push({
                 text: extracted,
                 start: match.index,
-                end: match.index + match[0].length
+                end: match.index + match[0].length + 1
             });
         }
 
@@ -166,6 +166,23 @@ function extractAddresses(text) {
     return addresses;
 }
 
+function findPhoneNumbers(text) {
+    // Match phone numbers in various formats
+    const phoneRegex = /\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
+
+    const phoneNumbers = [];
+    let match;
+
+    while ((match = phoneRegex.exec(text)) !== null) {
+        phoneNumbers.push({
+            text: match[0],
+            start: match.index,
+            end: match.index + match[0].length + 1
+        });
+    }
+
+    return phoneNumbers;
+}
 
 
 function findSSNs(text) {
@@ -200,7 +217,7 @@ function findSSNs(text) {
             ssns.push({
                 text: ssn,
                 start: index,
-                end: index + ssn.length
+                end: index + ssn.length + 1
             });
         }
     }
@@ -215,6 +232,7 @@ function extractAllPII(text) {
     const names = extractNames(text);
     const addresses = extractAddresses(text);
     const ssns = findSSNs(text);
+    const phoneNumbers = findPhoneNumbers(text);
 
     return {
         datesOfBirth,
@@ -222,6 +240,7 @@ function extractAllPII(text) {
         macAddresses: pii.macAddresses,
         names,
         addresses,
-        ssns
+        ssns,
+        phoneNumbers
     };
 }
