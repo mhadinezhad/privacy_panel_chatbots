@@ -1198,4 +1198,48 @@ body.panel-collapsed .toggle-panel-button {
   .pulse {
     animation: pulse 1s ease-in-out 3;
   }
+
+/* Style for Setting Panel from profile icon */
+
+  .profile-panel {
+    position: absolute;
+    top: 50px; /* Adjust depending on the profile icon's size */
+    right: 0;
+    width: 200px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+    z-index: 1000;
+    width: 250px;
+    padding: 0 18px 0 18px;
+}
+
+.profile-panel ul {
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+}
+
+.profile-panel ul li {
+    padding: 12px 15px 12px 30px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.profile-panel ul li:nth-child(3) {
+    background-color: #f5f5f5;
+}
+
+.profile-panel ul li:nth-child(3):hover {
+    cursor: pointer;
+}
+
+.profile-panel hr {
+    border: none;
+    margin: 5px 0;
+    background-color: #e4e4e4;
+}
+
   

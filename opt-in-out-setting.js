@@ -6,6 +6,33 @@ const modelDoneBtn = document.getElementById('model-done-btn');
 const toggleState = document.getElementById('toggle-state');
 const improveModelSection = document.getElementById('model-improvement-panel-toggle');
 const modelImproveCheckbox = document.getElementById('model-improve-checkbox');
+const profileIcon = document.getElementById('profile-icon');
+const profilePanel = document.getElementById('profile-panel');
+const settingsMenuItem = document.querySelector('.profile-panel ul li:nth-child(3)');
+
+
+// Function to toggle the visibility of the panel (the one for the profile picture)
+profileIcon.addEventListener('click', (event) => {
+  event.stopPropagation(); // Prevent click event from propagating to document
+  const isPanelVisible = profilePanel.style.display === 'block';
+  profilePanel.style.display = isPanelVisible ? 'none' : 'block';
+});
+
+// Close the panel (the one for the profile picture) when clicking outside of it
+document.addEventListener('click', (event) => {
+  if (!profilePanel.contains(event.target) && event.target !== profileIcon) {
+      profilePanel.style.display = 'none';
+  }
+});
+
+// Add functionality for the "Settings" menu item
+document.querySelector('.profile-panel ul li:nth-child(3)').addEventListener('click', () => {
+  settingsPopup.style.display = 'block';
+  overlay.classList.add('active');
+  profilePanel.style.display = 'none';
+});
+
+
 
 document.querySelector('.opt-in-out-btn').addEventListener('click', () => {
     settingsPopup.style.display = 'block';
