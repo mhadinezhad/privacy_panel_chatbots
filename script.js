@@ -59,6 +59,21 @@ let isProceeding = false;
 togglePanelButton.addEventListener('click', () => {
     document.body.classList.toggle('panel-collapsed');
     togglePanelButton.innerHTML = document.body.classList.contains('panel-collapsed') ? '&laquo;' : '&raquo;';
+
+
+    const isMinimized = document.body.classList.contains('panel-collapsed');
+    const action = isMinimized ? 'minimize': 'expand';
+
+    // Log the interaction
+    const interactionDetails = {
+        elementId: 'togglepanelbutton',
+        elementClass: togglePanelButton.className || null,
+        action: action, // "minimize" or "expand"
+        panelId: 'piiNoticePanel',
+        timestamp: new Date().toISOString(),
+    };
+
+    logInteraction('piiNoticePanel', 'toggle', JSON.stringify(interactionDetails));
 }); 
 
 // Function to update chat panel height based on input height
@@ -89,7 +104,8 @@ function createPIIBox(type, instances) {
     toggleSign.classList.add('pii-toggle-sign');
     toggleSign.textContent = '+';
     const typeName = document.createElement('span');
-    typeName.textContent = type;
+    typeName.textContent = type === 'Phone Num' ? 'Phone Number' : type;
+
 
     header.appendChild(toggleSign);
     header.appendChild(typeName);
@@ -114,7 +130,7 @@ function createPIIBox(type, instances) {
     anonymizeAllMenu.classList.add('dropdown-menu');
     anonymizeAllMenu.style.display = 'none';
 
-    const bulkActions = ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+    const bulkActions = ['Retract', ...(type === 'DoB' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
     bulkActions.forEach(action => {
         const actionItem = document.createElement('button');
         actionItem.textContent = action;
@@ -236,8 +252,7 @@ function createPIIBox(type, instances) {
         dropdownMenu.classList.add('dropdown-menu');
         dropdownMenu.style.display = 'none';
 
-        // const actions = ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
-        const actions = type === 'Phone Number' ? ['Retract', 'Fake'] : ['Retract', ...(type === 'Date of Birth' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
+        const actions = type === 'Phone Num' ? ['Retract', 'Fake'] : ['Retract', ...(type === 'DoB' || type === 'Physical Address' ? ['Generalize'] : []), 'Fake'];
 
         actions.forEach(action => {
             const actionItem = document.createElement('button');
@@ -359,34 +374,49 @@ function updateTextareaWithPreservedIndices(textarea, text, instances, replaceFn
 function generateFake(type) {
     switch (type) {
         case 'Email Address':
-            return 'fake.email@example.com';
+            return 'aweb@gmail.com';
         case 'Name':
-            return 'John Doe';
+            return 'Arron Web';
         case 'Physical Address':
-            return '123 Fake Street, Faketown, FK 12345';
-        case 'Date of Birth':
-            return 'January 1, 1990';
+            return '29 Main St, MA 23440';
+        case 'DoB':
+            return 'May 3, 1998';
         case 'SSN':
-            return '123-45-6789';
-        case 'Phone Number':
-            return '(555) 555-5555';
+            return '666-45-6788';
+        case 'Phone Num':
+            return '222-431-3040';
         default:
-            return '[Fake Data]';
+            return '[Fake]';
     }
 }
 
-// Utility function to generalize PII data
 function generalizePII(type, value) {
+    if (typeof value !== 'string' || value.trim() === '') {
+        return '[Generalized Data]'; // Handle invalid or empty input
+    }
+
     if (type === 'Physical Address') {
-        const parts = value.split(',');
-        return parts.length > 1 ? parts[parts.length - 1].trim() : '[Generalized Address]';
+        // Split the address using a space as the delimiter
+        const parts = value.split(' ').filter(Boolean); // Remove extra spaces
+        if (parts.length >= 2) {
+            return parts.slice(-2).join(' '); // Return the last two parts
+        } else if (parts.length === 1) {
+            return parts[0]; // If only one part exists, return it
+        }
+        return '[Generalized Address]'; // Default fallback
     }
-    if (type === 'Date of Birth') {
-        const yearMatch = value.match(/\b\d{4}\b/);
-        return yearMatch ? yearMatch[0] : '[Generalized Date]';
+
+    if (type === 'DoB') {
+        // Extract the year from the value
+        const yearMatch = value.match(/\b\d{4}\b/); // Match a 4-digit year
+        return yearMatch ? yearMatch[0] : '[Generalized Date]'; // Return the year or fallback
     }
+
+    // Default case for other types
     return '[Generalized Data]';
 }
+
+
 
 // Function to handle PII detection
 function handlePIIDetection(userMessage) {
@@ -403,7 +433,7 @@ function handlePIIDetection(userMessage) {
 
     let hasPII = false;
     if (datesOfBirth.length > 0) {
-        createPIIBox('Date of Birth', datesOfBirth);
+        createPIIBox('DoB', datesOfBirth);
         hasPII = true;
     }
     if (emails.length > 0) {
@@ -427,7 +457,7 @@ function handlePIIDetection(userMessage) {
         hasPII = true;
     }
     if (phoneNumbers.length > 0) {
-        createPIIBox('Phone Number', phoneNumbers);
+        createPIIBox('Phone Num', phoneNumbers);
         hasPII = true;
     }
 
@@ -583,21 +613,83 @@ function logInteraction(panel, action, element) {
     });
 }
 
+// piiNoticePanel.addEventListener('click', (event) => {
+//     const clickedElement = event.target;
+
+//     // Get detailed information about the clicked element
+//     const elementDetails = {
+//         id: clickedElement.getAttribute('id') || null,
+//         class: clickedElement.getAttribute('class') || null,
+//         dataId: clickedElement.getAttribute('data-id') || null,
+//         tag: clickedElement.tagName,
+//         textContent: clickedElement.textContent.trim().substring(0, 40), // First 50 chars of text
+//     };
+
+//     // Log the interaction with detailed element info
+//     logInteraction("privacyNoticePanel", "click", JSON.stringify(elementDetails));
+// });
+
 piiNoticePanel.addEventListener('click', (event) => {
     const clickedElement = event.target;
 
-    // Get detailed information about the clicked element
-    const elementDetails = {
-        id: clickedElement.getAttribute('id') || null,
-        class: clickedElement.getAttribute('class') || null,
-        dataId: clickedElement.getAttribute('data-id') || null,
+    // Collect general click data
+    const generalDetails = {
+        id: clickedElement.id || null,
+        class: clickedElement.className || null,
+        dataAttributes: Array.from(clickedElement.attributes)
+            .filter(attr => attr.name.startsWith('data-'))
+            .reduce((acc, attr) => {
+                acc[attr.name] = attr.value;
+                return acc;
+            }, {}),
         tag: clickedElement.tagName,
-        textContent: clickedElement.textContent.trim().substring(0, 40), // First 50 chars of text
+        role: clickedElement.getAttribute('role') || null,
+        textContent: clickedElement.textContent.trim().substring(0, 50), // First 50 characters
+        timestamp: new Date().toISOString(),
+        piiDetails: null, // Placeholder for PII-specific details
+        bulkDetails: null, // Placeholder for Bulk-action details
     };
 
-    // Log the interaction with detailed element info
-    logInteraction("privacyNoticePanel", "click", JSON.stringify(elementDetails));
+    // Check if the clicked element is part of a PII instance
+    const piiContainer = clickedElement.closest('.pii-instance');
+    if (piiContainer) {
+        generalDetails.piiDetails = {
+            piiType: piiContainer.getAttribute('data-type') || 'Unknown', // e.g., "Email Address"
+            piiInstance: piiContainer.querySelector('span')?.textContent.trim() || 'Unknown', // PII value
+            action: getPiiAction(clickedElement), // Determine the specific action (locate, restore, dropdown)
+        };
+    }
+
+    // Check if the clicked element is part of a bulk action
+    const bulkActionContainer = clickedElement.closest('.pii-bulk-actions');
+    if (bulkActionContainer) {
+        const bulkActionType = clickedElement.textContent.trim();
+        const piiType = bulkActionContainer.closest('.pii-type-box')?.getAttribute('data-type') || 'Unknown';
+
+        // Collect all PII instances associated with this bulk action
+        const piiInstances = Array.from(
+            bulkActionContainer.closest('.pii-type-box').querySelectorAll('.pii-instance span')
+        ).map((span) => span.textContent.trim());
+
+        generalDetails.bulkDetails = {
+            piiType: piiType, // e.g., "Email Address"
+            action: `bulk-${bulkActionType.toLowerCase()}`, // e.g., "bulk-retract"
+            affectedPII: piiInstances, // List of PII values affected by this bulk action
+        };
+    }
+
+    // Log the enriched interaction
+    logInteraction("piiNoticePanel", "click", JSON.stringify(generalDetails));
 });
+
+// Utility function to determine the specific PII action
+function getPiiAction(element) {
+    if (element.classList.contains('locate-icon')) return 'locate';
+    if (element.classList.contains('restore-icon')) return 'restore';
+    if (element.closest('.pii-dropdown-container')) return 'dropdown-action';
+    return 'unknown-action';
+}
+
 
 
 async function getChatGPTResponse(userMessage, aiMessageElement) {

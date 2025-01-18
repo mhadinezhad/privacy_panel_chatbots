@@ -43,12 +43,14 @@ function findPII(text) {
     const emails = [];
     const macAddresses = [];
     let match;
+    const excludedEmails = ['aweb@gmail.com'];
 
     // Capture emails
     while ((match = emailRegex.exec(text)) !== null) {
         // Ensure the match is not part of an empty "Cc:" or similar
         const beforeMatch = text.slice(Math.max(0, match.index - 5), match.index).trim();
-        if (!/^cc:|bcc:|to:|from:$/i.test(beforeMatch) || match[0].trim() !== '') {
+        const email = match[0].trim();
+        if ((!/^cc:|bcc:|to:|from:$/i.test(beforeMatch) || email !== '') && !excludedEmails.includes(email)) {
             emails.push({
                 text: match[0],
                 start: match.index,
@@ -150,7 +152,7 @@ function extractAddresses(text) {
         let extracted = match[0].trim();
 
         // Ensure only clean address data is captured
-        if (extracted.match(streetRegex) && extracted.match(zipRegex)) {
+        if (extracted.match(streetRegex) && extracted.match(zipRegex) && !'29 Main St, MA 23440'.includes(extracted)) {
             addresses.push({
                 text: extracted,
                 start: match.index,
@@ -170,19 +172,27 @@ function findPhoneNumbers(text) {
     // Match phone numbers in various formats
     const phoneRegex = /\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
 
+    const excludedPhoneNumbers = ['222-431-3040']; // List of phone numbers to exclude
+
     const phoneNumbers = [];
     let match;
 
     while ((match = phoneRegex.exec(text)) !== null) {
-        phoneNumbers.push({
-            text: match[0],
-            start: match.index,
-            end: match.index + match[0].length + 1
-        });
+        const phoneNumber = match[0].trim();
+
+        // Skip excluded phone numbers
+        if (!excludedPhoneNumbers.includes(phoneNumber)) {
+            phoneNumbers.push({
+                text: phoneNumber,
+                start: match.index,
+                end: match.index + phoneNumber.length + 1
+            });
+        }
     }
 
     return phoneNumbers;
 }
+
 
 
 function findSSNs(text) {
