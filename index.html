@@ -108,6 +108,7 @@
         <div class="other-actions-title">Other actions to protect your information</div>
         <div class="other-actions-body">
           <button class="opt-in-out-btn">Opt in or out of sharing your content for model training &#8250;</button>
+          <button class="memory-btn">Enable or disable chatbot's memory &#8250;</button>
         </div>
       </div>
 
@@ -127,11 +128,12 @@
     <div class="settings-popup-content">
       <!-- Settings Menu -->
       <ul class="settings-menu">
-        <li class="menu-item">General</li>
-        <li class="menu-item">Personalization</li>
-        <li class="menu-item">Speech</li>
+        <li class="menu-item" data-panel-id="general-panel">General</li>
+        <li class="menu-item">Notifications</li>
+        <li class="menu-item personalization-panel" data-panel-id="personalization-panel">Personalization</li>
+        <li class="menu-item" data-panel-id="speech-panel">Speech</li>
         <li id="data-controls-btn" class="menu-item active data-controls">Data controls</li>
-        <li class="menu-item">Builder profile</li>
+        <li class="menu-item" data-panel-id="builder-profile-panel">Builder profile</li>
         <li class="menu-item">Connected apps</li>
         <li class="menu-item">Security</li>
         <li class="menu-item">Subscription</li>
@@ -170,6 +172,37 @@
           </div>
         </div>
       </div>
+
+      <div id="personalization-panel" class="settings-panel" style="display: none;">
+        <p style="font-size: 14px; margin-top: 10px;">Custom instructions</p>
+        <hr />
+        <div class="memory-header">
+          <p style="margin: 5px 0;">Memory</p>
+          <label class="toggle-switch">
+            <input type="checkbox" id="memory-toggle" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="memory-section">
+          <p>
+          ChatGPT will become more helpful as you chat, picking up on details and preferences to tailor its responses to you. 
+          <u><a href="https://help.openai.com/en/articles/8590148-memory-faq" target="_blank" class="learn-more-link">Learn more</a></u>
+          <br><br>
+          To understand what ChatGPT remembers or teach it something new, just chat with it:
+          <ul class="memory-tips-list">
+            <li>“Remember that I like concise responses.”</li>
+            <li>“I just got a puppy!”</li>
+            <li>“What do you remember about me?”</li>
+            <li>“Where did we leave off on my last project?”</li>
+          </ul>
+          </p>
+        </div>
+        <div class="memory-controls">
+          <button class="btn memory-manage-btn">Manage</button>
+          <button class="btn clear-memory-btn">Clear memories</button>
+        </div>
+      </div>
+      
     </div>
   </div>
 
@@ -190,7 +223,7 @@
       </div>
       <p class="popup-description">
         Allow your content to be used to train our models, which makes ChatGPT better for you and everyone who uses it. 
-        We take steps to protect your privacy. <a href="#" class="learn-more">Learn more</a>
+        We take steps to protect your privacy. <u><a href="https://help.openai.com/en/articles/5722486-how-your-data-is-used-to-improve-model-performance" target="_blank" class="learn-more">Learn more</a></u>
       </p>
       <button id="model-done-btn" class="btn done-btn">Done</button>
     </div>

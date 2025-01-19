@@ -105,6 +105,7 @@ function createPIIBox(type, instances) {
     toggleSign.textContent = '+';
     const typeName = document.createElement('span');
     typeName.textContent = type === 'Phone Num' ? 'Phone Number' : type;
+    typeName.textContent = type === 'DoB' ? 'Date of Birth' : type;
 
 
     header.appendChild(toggleSign);
