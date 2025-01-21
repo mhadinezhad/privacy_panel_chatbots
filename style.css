@@ -964,6 +964,21 @@ body.panel-collapsed .toggle-panel-button {
   
   .settings-menu li {
     padding: 11px 10px;
+    opacity: 0.3;
+  }
+
+  #data-controls-btn, #personalization-panel{
+    opacity: 1;
+  }
+
+  .settings-menu li[data-panel-id="personalization-panel"]{
+    opacity: 1;
+  }
+
+  .settings-menu li[data-panel-id="personalization-panel"]:hover {
+    cursor: pointer;
+    background-color: #f0f0f0;
+    border-radius: 8px;
   }
 
   .data-controls{
@@ -1225,14 +1240,16 @@ body.panel-collapsed .toggle-panel-button {
     padding: 12px 15px 12px 30px;
     font-size: 14px;
     transition: background-color 0.2s;
+    opacity: 0.2;
 }
 
 .profile-panel ul li:nth-child(3) {
-    background-color: #f5f5f5;
+    opacity: 1;
 }
 
 .profile-panel ul li:nth-child(3):hover {
     cursor: pointer;
+    background-color: #f5f5f5;
 }
 
 .profile-panel hr {
@@ -1351,9 +1368,4 @@ body.panel-collapsed .toggle-panel-button {
   
   input:checked + .slider:before {
     transform: translateX(14px);
-  }
-  
-
-  .settings-menu li[data-panel-id="personalization-panel"]:hover {
-    cursor: pointer;
   }
