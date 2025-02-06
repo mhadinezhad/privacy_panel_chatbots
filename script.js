@@ -24,12 +24,29 @@ let userId;
 let messagesRef;
 let interactionsRef;
 
+// Retrieve user data from localStorage
+const email = localStorage.getItem('umassEmail');
+const fullName = localStorage.getItem('fullName');
+const zoomMeeting = localStorage.getItem('zoomMeeting');
 
 signInAnonymously(auth)
     .then((userCredential) => {
         userId = userCredential.user.uid; // Get the user's UID
         console.log("User signed in anonymously with UID:", userId);
 
+        // Write the user information to the database
+        set(ref(database, `participants/${userId}/userInfo`), {
+            email: email,
+            fullName: fullName,
+            zoomMeeting: zoomMeeting
+        })
+        .then(() => {
+            console.log("User info saved successfully.");
+        })
+        .catch((error) => {
+            console.error("Error saving user info:", error);
+        });
+        
         // Initialize references only after UID is obtained
         messagesRef = ref(database, `participants/${userId}/messages`);
         interactionsRef = ref(database, `participants/${userId}/interactions`);
@@ -488,10 +505,19 @@ sendButton.addEventListener('click', () => {
         return; // Do nothing if the input is empty
     }
 
-    const hasPII = handlePIIDetection(userMessage); // Detect PII
+    let hasPII = false;
+
+    if (zoomMeeting === 'first') {
+        hasPII = false; // Deactivate the notice if this is the meeting for the Control Version
+    } else if (zoomMeeting === 'second') {
+        hasPII = handlePIIDetection(userMessage); // Detect PII for the experimental version
+    } else {
+        console.warn("Unexpected meeting type:", zoomMeeting);
+        hasPII = false;
+    }
+
     const sentToAPI = !hasPII; // Determine if the message can be sent to the API
 
-    
     if (hasPII) {
         // If PII exists, log the blocked action and display the notice
         logMessage("sendButton", userMessage, false, null); // Log the block
@@ -690,7 +716,6 @@ function getPiiAction(element) {
     if (element.closest('.pii-dropdown-container')) return 'dropdown-action';
     return 'unknown-action';
 }
-
 
 
 async function getChatGPTResponse(userMessage, aiMessageElement) {
@@ -904,7 +929,6 @@ function calculatePixelPosition(textarea, index) {
     const offsetAdjustment = 70; // Adjust based on testing
     return position - offsetAdjustment;
 }
-
 
 
 // Helper function to adjust indices for newlines

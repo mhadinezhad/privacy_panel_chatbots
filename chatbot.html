@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatGPT-like Interface</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <!-- Top Left Section -->
+  <div class="top-bar">
+    <div class="top-left">
+      <img src="conversations.png" alt="Icon 1" class="top-left-icon-conv">
+      <img src="newchat.png" alt="Icon 2" class="top-left-icon-newchat">
+      <span class="top-left-text">ChatGPT 4.0</span>
+    </div>
+
+    <!-- Top Right Section -->
+    <div class="top-right">
+      <button class="share-button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 6 L12 17 M6 12 L12 6 L18 12 " stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Share
+      </button>
+      <img src="profile.png" alt="Profile Icon" class="top-right-icon">
+      <!-- Setting Panel -->
+      <div class="top-right">
+        <img src="profile.png" alt="Profile Icon" class="top-right-icon" id="profile-icon">
+        <div id="profile-panel" class="profile-panel">
+          <ul>
+            <li>My GPTs</li>
+            <li>Customize ChatGPT</li>
+            <li>Settings</li>
+            <hr />
+            <li>Download the macOS app</li>
+            <li>Upgrade Plan</li>
+            <li>Get ChatGPT search extension</li>
+            <hr />
+            <li>Log out</li>
+          </ul>
+        </div>
+      </div>
+      <!-- Setting Panel End of Code -->
+    </div>
+  </div>
+
+  <div class="toggle-panel-button" id="togglepanelbutton">&raquo;</div>
+
+  <div class="main-content">
+    <div class="chat-panel" id="chat-panel"></div>
+    <div class="input-container">
+      <textarea id="user-input" placeholder="Message ChatGPT"></textarea>
+      <button id="send-button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4 L12 20 M6 10 L12 4 L18 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+      </button>
+    </div>
+
+    <!-- Text Below Input -->
+    <div class="input-footer-text">
+      ChatGPT can make mistakes. Check important info.
+    </div>
+
+  </div>
+  
+  <!-- Privacy Notice Panel -->
+  <div class="pii-notice-panel" id="piiNoticePanel">
+    <div class="pii-panel-header">
+      <div class="icon-container">
+        <img src="exclamationmark.png" alt="Privacy Icon" class="privacy-icon">
+      </div>
+      <div class="text-container">
+        <h2>Privacy Warning!</h2>
+        <p class="warning-text">You are sharing potentially sensitive information!</p>
+      </div>
+    </div>
+    <div class="pii-panel-content">
+      <p class="info-text">
+        Including sensitive information rarely enhances a chatbot's utility but can risk your privacy and safety.
+      </p>
+      <h4>Got Questions?</h4>
+      <button class="privacy-tips-btn">
+        <div class="privacy-tips-btn-left">
+            <p>Find Answers</br>in our FAQs</p>
+            <img src="faqs.png" alt="FAQ icon">
+        </div>
+        <div class="privacy-tips-btn-left">
+          <p style="font-size: 14px;">&</p>
+        </div>
+        <div class="privacy-tips-btn-right">
+            <p> Review Real-world</br>Chatbot Privacy Cases</p>
+            <img src="cases.png" alt="Privacy cases icon">
+        </div>
+      </button>    
+      <div class="anonymization-section">
+        <div class="anonymization-section-title">Use this panel to anonymize sensitive information</div>
+        <div class="anonymization-section-body">
+        </div>
+        <div class="anonymization-section-warning"> <b>Note</b>: These might not be all the sensitive info in your prompt!</div>
+      </div>
+      <div class="other-actions">
+        <div class="other-actions-title">Other actions to protect your information</div>
+        <div class="other-actions-body">
+          <button class="opt-in-out-btn">Opt in or out of sharing your content for model training &#8250;</button>
+          <button class="memory-btn">Enable or disable chatbot's memory &#8250;</button>
+        </div>
+      </div>
+
+      <div class="proceed-button-container">
+        <button class="proceed-send-btn" id="proceedSendBtn">Proceed with Sending</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Popup -->
+  <div id="settings-popup" class="popup">
+    <div class="popup-header">
+      <h3>Settings</h3>
+      <button id="close-settings" class="setting-close-popup-btn">&times;</button>
+    </div>
+    <hr />
+    <div class="settings-popup-content">
+      <!-- Settings Menu -->
+      <ul class="settings-menu">
+        <li class="menu-item" data-panel-id="general-panel">General</li>
+        <li class="menu-item">Notifications</li>
+        <li class="menu-item personalization-panel" data-panel-id="personalization-panel">Personalization</li>
+        <li class="menu-item" data-panel-id="speech-panel">Speech</li>
+        <li id="data-controls-btn" class="menu-item active data-controls">Data controls</li>
+        <li class="menu-item" data-panel-id="builder-profile-panel">Builder profile</li>
+        <li class="menu-item">Connected apps</li>
+        <li class="menu-item">Security</li>
+        <li class="menu-item">Subscription</li>
+      </ul>
+
+      <!-- Data Controls Content -->
+      <div id="data-controls-panel" class="settings-panel">
+        <div class="panel-section">
+          <div class="section-header" id="model-improvement-panel-toggle">
+            <p class="section-title improve-model-cursor">Improve the model for everyone</p>
+            <p class="section-toggle improve-model-cursor" id="toggle-state">On  &#8250;</p>
+          </div>
+          <hr />
+        </div>
+
+        <div class="panel-section">
+          <div class="section-row">
+            <p>Shared links</p>
+            <button id="manage-links" class="btn small">Manage</button>
+          </div>
+          <hr />
+        </div>
+
+        <div class="panel-section">
+          <div class="section-row">
+            <p>Export data</p>
+            <button id="export-data" class="btn small">Export</button>
+          </div>
+          <hr />
+        </div>
+
+        <div class="panel-section">
+          <div class="section-row">
+            <p>Delete account</p>
+            <button id="delete-account" class="btn delete-btn">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="personalization-panel" class="settings-panel" style="display: none;">
+        <p style="font-size: 14px; margin-top: 10px;">Custom instructions</p>
+        <hr />
+        <div class="memory-header">
+          <p style="margin: 5px 0;">Memory</p>
+          <label class="toggle-switch">
+            <input type="checkbox" id="memory-toggle" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="memory-section">
+          <p>
+          ChatGPT will become more helpful as you chat, picking up on details and preferences to tailor its responses to you. 
+          <u><a href="https://help.openai.com/en/articles/8590148-memory-faq" target="_blank" class="learn-more-link">Learn more</a></u>
+          <br><br>
+          To understand what ChatGPT remembers or teach it something new, just chat with it:
+          <ul class="memory-tips-list">
+            <li>“Remember that I like concise responses.”</li>
+            <li>“I just got a puppy!”</li>
+            <li>“What do you remember about me?”</li>
+            <li>“Where did we leave off on my last project?”</li>
+          </ul>
+          </p>
+        </div>
+        <div class="memory-controls">
+          <button class="btn memory-manage-btn">Manage</button>
+          <button class="btn clear-memory-btn">Clear memories</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+
+  <!-- Model Improvement Popup -->
+  <div id="model-popup" class="popup model-popup">
+    <div class="popup-header">
+      <h3>Model improvement</h3>
+    </div>
+    <hr />
+    <div class="model-improv-popup-content">
+      <div class="toggle-row">
+        <h3 class="popup-title">Improve the model for everyone</h3>
+        <label class="switch">
+          <input type="checkbox" id="model-improve-checkbox" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="popup-description">
+        Allow your content to be used to train our models, which makes ChatGPT better for you and everyone who uses it. 
+        We take steps to protect your privacy. <u><a href="https://help.openai.com/en/articles/5722486-how-your-data-is-used-to-improve-model-performance" target="_blank" class="learn-more">Learn more</a></u>
+      </p>
+      <button id="model-done-btn" class="btn done-btn">Done</button>
+    </div>
+  </div>
+
+  <!-- Privacy Tips Pop-up -->
+  <div class="overlay" id="overlay"></div>
+    <div class="privacy-tips-popup" id="privacyTipsPopup">
+      <div class="popup-content">
+        <button class="close-popup-btn" id="closePopupBtn">&times;</button>
+        <div class="faq-section">
+          <div class="faq-left">
+            <h2>FAQs about Privacy in Conversational Agents (i.e., Chatbots)</h2>
+            <!-- ***** QUESTION 1 **** -->
+
+            <div class="faq-item" data-id="faq-item-1">
+              <div class="faq-question" data-tooltip="Click to Expand/Collapse" data-id="faq-question-1">
+                <span data-id="faq-question-text-1"><b>Q1.</b> What types of information are generally considered private and may pose privacy risks?</span>
+                <span class="faq-toggle" data-id="faq-toggle-1">+</span>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-1">
+                <div class="answer-summary" data-id="answer-summary-1">
+                  <span data-id="answer-summary-text-1">&#x2022;&nbsp;&nbsp;Private Information Disclose Sensitive Details about You or Others</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-1">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-1">
+                  <p data-id="answer-details-text-1">
+                    Privacy experts generally consider information private if it can directly or indirectly reveal your or others’ identities or disclose sensitive details about your or others’ lives and behavior. When such information is linked to each other and exposed to attackers, it can be misused or cause harm to you and/or others.
+                    </br></br>
+                    Find more details <a href="https://en.wikipedia.org/wiki/Internet_privacy" target="_blank">Here</a> and <a href="https://en.wikipedia.org/wiki/Personal_data" target="_blank">Here</a>.
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-2">
+                <div class="answer-summary" data-id="answer-summary-2">
+                  <span data-id="answer-summary-text-2">&#x2022;&nbsp;&nbsp;Examples of Private Information and How They Could Be Misused</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-2">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-2">
+                  <p data-id="answer-details-text-2">
+                    For example, information such as full name, date of birth, social security number, physical address, email address, and phone number can more directly reveal an individual’s identity. This type of information is known as Personally Identifiable Information (PII) and is considered extremely sensitive. Other private information includes details that can disclose sensitive aspects of people’s lives and behaviors, such as financial records, health information, location data, and social relationships. 
+                    </br></br>
+                    An example of misusing such data is if an attacker gains access to your private conversations with chatbots and combines that information with your email address or full name shared on other platforms like educational websites, they could forge your identity, potentially leading to identity theft or financial fraud.
+                    </br></br>
+                    Find more details <a href="https://en.wikipedia.org/wiki/Internet_privacy" target="_blank">Here</a> and <a href="https://en.wikipedia.org/wiki/Personal_data" target="_blank">Here</a>.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- ***** QUESTION 2 **** -->
+            <div class="faq-item" data-id="faq-item-2">
+              <div class="faq-question" data-tooltip="Click to Expand/Collapse" data-id="faq-question-2">
+                <span data-id="faq-question-text-2"><b>Q2.</b> Am I completely anonymous (i.e., my conversations and my identity cannot be linked and accessed) when interacting with chatbots like ChatGPT?</span>
+                <span class="faq-toggle" data-id="faq-toggle-2">+</span>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-3">
+                <div class="answer-summary" data-id="answer-summary-3">
+                  <span data-id="answer-summary-text-3">&#x2022;&nbsp;&nbsp;Chatbots Cannot Completely Guarantee Your Anonymity</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-3">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-3">
+                  <p data-id="answer-details-text-3">
+                    When using chatbots like ChatGPT, you might feel anonymous since the chatbot doesn't know who you are or cannot judge you by what you share. However, your anonymity isn't guaranteed. There have been cases [Read More <a href="https://arxiv.org/abs/2311.17035" target="_blank">Here</a>] where individuals' identities were linked to their sensitive information and exposed to others.
+                  </p>
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-4">
+                <div class="answer-summary" data-id="answer-summary-4">
+                  <span data-id="answer-summary-text-4">&#x2022;&nbsp;&nbsp;AI Can Link Your Information from Various Sources</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-4">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-4">
+                  <p data-id="answer-details-text-4">
+                    A <a href="https://doi.org/10.1145/3613904.3642116" target="_blank">2024 study</a> shows that AI technologies, including conversational agents (i.e., chatbots), have increased privacy risks. Traditionally, your information online has been scattered across different sources, making it difficult for attackers to connect all those pieces to your identity. But, modern chatbots are trained on diverse data, including yours, from various sources on the internet—such as text, images, and audio files from social media, personal websites, email services, and educational platforms. This means that if unauthorized people gain access to this training data—as it is shown to be possible [Read More <a href="https://arxiv.org/abs/2311.17035" target="_blank">Here</a> and <a href="https://venturebeat.com/ai/oops-google-search-caught-publicly-indexing-users-conversations-with-bard-ai/" target="_blank">Here</a>]—they could link your information across the web, potentially revealing more about you than you intended.
+                  </p>
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-5">
+                <div class="answer-summary" data-id="answer-summary-5">
+                  <span data-id="answer-summary-text-5">&#x2022;&nbsp;&nbsp;Third-parties Could Access Your Data</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-5">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-5">
+                  <p data-id="answer-details-text-5">
+                    Your data could be accessed by third parties [See Examples <a href="https://openai.com/policies/row-privacy-policy/" target="_blank">Here</a> and <a href="https://privacy.commonsense.org/privacy-report/Google-Bard" target="_blank">Here</a>], such as other companies or legal authorities, who may have different privacy policies than the company that owns the chatbot you're using. This means they could potentially link your shared data to your identity. So, while using these chatbots, remember that anonymity isn't guaranteed, and privacy risks can be further exacerbated.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ***** QUESTION 3 **** -->
+            <div class="faq-item" data-id="faq-item-3">
+              <div class="faq-question" data-tooltip="Click to Expand/Collapse" data-id="faq-question-3">
+                <span data-id="faq-question-text-3"><b>Q3.</b> Do I need to sacrifice my privacy (e.g., sharing my private information) or others’ privacy (e.g., sharing my friends’ information) to get the most out of chatbots like ChatGPT?</span>
+                <span class="faq-toggle" data-id="faq-toggle-3">+</span>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-6">
+                <div class="answer-summary" data-id="answer-summary-6">
+                  <span data-id="answer-summary-text-6">&#x2022;&nbsp;&nbsp;Don’t See Privacy as All-or-nothing</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-6">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-6">
+                  <p data-id="answer-details-text-6">
+                    Chatbots can assist you without needing sensitive details. Also, decisions about your privacy when interacting with chatbots shouldn’t be seen as all-or-nothing. You can avoid sharing unnecessary information that poses privacy risks but doesn’t significantly improve the chatbot's utility. For example, disclosing personally identifiable information—e.g., names, birthdates, or physical addresses—usually doesn't enhance the chatbot’s effectiveness much but does increase privacy risks. For most tasks, you can protect your privacy and still benefit from the chatbot.
+                  </p>
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-7">
+                <div class="answer-summary" data-id="answer-summary-7">
+                  <span data-id="answer-summary-text-7">&#x2022;&nbsp;&nbsp;Assess and Consider the Risks Before Sharing Information</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-7">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-7">
+                  <p data-id="answer-details-text-7">
+                    If a task requires private information, consider whether it's worth the risk. Ask yourself about the risks associated with sharing private information. If you're unsure, it might be safer not to use the chatbot for that task. You can also use generalized or fictional information instead of exact details—like stating a country or city instead of an exact physical address.
+                  </p>
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-8">
+                <div class="answer-summary" data-id="answer-summary-8">
+                  <span data-id="answer-summary-text-8">&#x2022;&nbsp;&nbsp;Respect Others’ Privacy</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-8">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-8">
+                  <p data-id="answer-details-text-8">
+                    Be cautious about sharing others' private information, as their privacy preferences and contexts may differ. Without their consent, it is safer to avoid sharing their details with chatbots to respect their privacy.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ***** QUESTION 4 **** -->
+            <div class="faq-item" data-id="faq-item-4">
+              <div class="faq-question" data-tooltip="Click to Expand/Collapse" data-id="faq-question-4">
+                <span data-id="faq-question-text-4"><b>Q4.</b> I’ve already shared my private information on other platforms (e.g., social media). How does sharing this information with chatbots like ChatGPT affect my privacy?</span>
+                <span class="faq-toggle" data-id="faq-toggle-4">+</span>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-9">
+                <div class="answer-summary" data-id="answer-summary-9">
+                  <span data-id="answer-summary-text-9">&#x2022;&nbsp;&nbsp;Sharing with More Platforms May Mean Greater Privacy Risks</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-9">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-9">
+                  <p data-id="answer-details-text-9">
+                    Each time you share information on a new platform, you increase the chances of it being accessed, aggregated, or linked to other data. This makes it easier for someone to piece together a more complete picture of your identity. Traditionally, your data is sparse and scattered across different resources, but newer platforms like conversational agents (i.e., chatbots) make it easier to connect these pieces of information about you [Read more <a href="https://doi.org/10.1145/3613904.3642116" target="_blank">Here</a>], raising potentially serious privacy risks.
+                  </p>
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-10">
+                <div class="answer-summary" data-id="answer-summary-10">
+                  <span data-id="answer-summary-text-10">&#x2022;&nbsp;&nbsp;Chatbots Process Data Differently</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-10">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-10">
+                  <p data-id="answer-details-text-10">
+                    Chatbots use your information differently than other platforms like online websites or social media. While online websites or social media might store and display your data, chatbots process it to ‘generate’ responses, which could involve storing or using the data in ways you might not expect.
+                  </p>
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-11">
+                <div class="answer-summary" data-id="answer-summary-11">
+                  <span data-id="answer-summary-text-11">&#x2022;&nbsp;&nbsp;Chatbots Can Be Major Sources of Individuals’ Private Information</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-11">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-11">
+                  <p data-id="answer-details-text-11">
+                    As more individuals share private information with chatbots, these tools become significant sources of personal data, increasing the severity of potential data breaches. This concern is heightened by recorded incidents [See examples <a href="https://arxiv.org/abs/2311.17035" target="_blank">Here</a>, <a href="https://venturebeat.com/ai/oops-google-search-caught-publicly-indexing-users-conversations-with-bard-ai/" target="_blank">Here</a>, and <a href="https://thediplomat.com/2021/01/chatbot-gone-awry-starts-conversations-about-ai-ethics-in-south-korea/" target="_blank">Here</a>] in which different chatbots have exposed users' private information.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ***** QUESTION 5 **** -->
+            <div class="faq-item" data-id="faq-item-5">
+              <div class="faq-question" data-tooltip="Click to Expand/Collapse" data-id="faq-question-5">
+                <span data-id="faq-question-text-5"><b>Q5.</b> Is it the responsibility of the companies and developers of chatbots (e.g., ChatGPT) to protect my private information or is it my responsibility?</span>
+                <span class="faq-toggle" data-id="faq-toggle-5">+</span>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-12">
+                <div class="answer-summary" data-id="answer-summary-12">
+                  <span data-id="answer-summary-text-12">&#x2022;&nbsp;&nbsp;Protecting Your Private Information is a Shared Responsibility</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-12">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-12">
+                  <p data-id="answer-details-text-12">
+                    Companies and developers of chatbots are responsible for ensuring that your data is secure from unauthorized access and for clearly communicating how your data is collected, used, stored, and shared. On your end, it's important to regularly evaluate the risks and benefits of sharing your private information and make informed decisions about what to share and what to withhold.
+                  </p>
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-13">
+                <div class="answer-summary" data-id="answer-summary-13">
+                  <span data-id="answer-summary-text-13">&#x2022;&nbsp;&nbsp;Chatbots’ Privacy Risks and Measures Are Not Fully Understood Yet</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-13">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-13">
+                  <p data-id="answer-details-text-13">
+                    It is important to know that once you share your data, you expose yourself to privacy risks that may be unknown to you and/or the companies at the moment. Even with the best intentions, companies and developers may not be able to prevent all privacy risks, as many are still being discovered [<a href="https://doi.org/10.1145/3613904.3642116" target="_blank">Here</a>]. This is partly due to the complex, opaque nature of modern chatbots, which even experts struggle to fully understand [Add link/s].
+                  </p>
+                </div>
+              </div>
+              <div class="faq-answer" data-id="faq-answer-14">
+                <div class="answer-summary" data-id="answer-summary-14">
+                  <span data-id="answer-summary-text-14">&#x2022;&nbsp;&nbsp;Unclear Privacy Risks and Protections Pose Future Potential Threats</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="faq-toggle-summary-14">+</span>
+                </div>
+                <div class="answer-details" data-id="answer-details-14">
+                  <p data-id="answer-details-text-14">
+                    The unclear privacy risks and protections in conversational agents (i.e., chatbots) mean that what you share now could be used in harmful ways in the future. You can help protect your own and others’ privacy by avoiding or minimizing the sharing of sensitive information with chatbots, especially when they are not even necessary for the chatbot’s utility.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Add four more FAQ items here in the same structure -->
+          </div>
+
+          <div class="faq-right">
+            <h2>Real-world Privacy Cases in Conversational Agents (i.e., Chatbots)</h2>
+            <!-- ***** CASE 1 **** -->
+            <div class="faq-item" data-id="case-item-1">
+              <div class="faq-question" data-tooltip="Click to Expand/Collapse" data-id="case-question-1">
+                <span data-id="case-question-text-1"><b>Case 1</b></br> Lee Luda: A Chatbot Mimicking a 20 y.o. Student to Connect with Users</span>
+                <span class="faq-toggle" data-id="case-toggle-1">+</span>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-1">
+                <div class="answer-summary" data-id="case-summary-1">
+                  <span data-id="case-summary-text-1">&#x2022;&nbsp;&nbsp;General Information about Lee Luda</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-1">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-1">
+                  <p data-id="case-details-text-1">
+                    Launched in December 2020, Lee Luda was a chatbot created by South Korean web firm <a href="https://www.scatterlab.co.kr/" target="_blank">Scatter Lab</a> and integrated into Facebook Messenger. Its goal was to become the first AI to deeply connect with humans. Lee Luda was trained on more than 10 billion messages, including data from KakaoTalk, South Korea’s top messaging app used by 90% of the population.
+                    </br></br>
+                    Lee Luda was designed to mimic a 20-year-old female university student, encouraging users to build a relationship with 'her' through everyday conversations.
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-2">
+                <div class="answer-summary" data-id="case-summary-2">
+                  <span data-id="case-summary-text-2">&#x2022;&nbsp;&nbsp;Lee Luda Gained Popularity for Its ‘Human-like’ Conversation and Ability to Build ‘Intimacy’</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-2">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-2">
+                  <p data-id="case-details-text-2">
+                    The chatbot used deep learning, a technique that simulates certain aspects of human intelligence, such as speech, by processing vast amounts of data. This approach improves AI performance as more data is accumulated.
+                    </br></br>
+                    The initial reaction to Lee Luda was largely positive, with over 750,000 people, mostly teenagers and young adults, subscribing to its Facebook Messenger account. Users were primarily attracted to its ‘informality’ and the ability to talk ‘like a real person’ as well as the ability to build ‘intimacy’ over time.
+                    </br></br>
+                    Find more details <a href="https://en.yna.co.kr/view/AEN20210111009800325" target="_blank">Here</a> and <a href="https://thediplomat.com/2021/01/chatbot-gone-awry-starts-conversations-about-ai-ethics-in-south-korea/" target="_blank">Here</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-3">
+                <div class="answer-summary" data-id="case-summary-3">
+                  <span data-id="case-summary-text-3">&#x2022;&nbsp;&nbsp;Lee Luda Started Leaking Personal Data and Generating Offensive Comments</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-3">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-3">
+                  <p data-id="case-details-text-3">
+                    Although the chatbot's goals seemed innocuous, the ethical issues underneath surfaced quickly after its launch. Lee Luda was accused of outputting personal data, such as names, addresses, and bank account numbers, from people whose information was used to train the model—mostly sourced from the KakaoTalk app.
+                    </br></br>
+                    Furthermore, Scatter Lab uploaded a version of Luda's training model to GitHub, which included about 200 private one-on-one text exchanges containing personal information.
+                    </br></br>
+                    In April 2021, Korea’s data protection agency, the Personal Information Protection Commission (PPIC), fined Scatter Lab 103.3 million won (USD 93,000) for failing to obtain proper user permissions.
+                    </br></br>
+                    Additionally, Lee Luda started spraying users with offensive, discriminatory, and homophobic comments about women, lesbians, black, disabled, and trans people, and was used to sexually harass others. You can read more about these here.
+                    </br></br>
+                    Find more details <a href="https://en.yna.co.kr/view/AEN20210111009800325" target="_blank">Here</a> and <a href="https://thediplomat.com/2021/01/chatbot-gone-awry-starts-conversations-about-ai-ethics-in-south-korea/" target="_blank">Here</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-4">
+                <div class="answer-summary" data-id="case-summary-4">
+                  <span data-id="case-summary-text-4">&#x2022;&nbsp;&nbsp;Key Takeaways from the Incident for Chatbot Users</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-4">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-4">
+                  <p data-id="case-details-text-4">
+                    This incident highlights a significant challenge in AI technologies: personal information is often not confined to a single company but can move between systems, leading to long-term consequences for individuals. In this case, Kakao, a major company, failed to anticipate the risks associated with KakaoTalk's backup function, which Scatter Lab used to train its models. Additionally, Scatter Lab did not protect individuals' private conversations used for model training.
+                    </br></br>
+                    Thus, while chatbots may give users a sense of anonymity, they cannot guarantee it. Users should critically assess privacy agreements and the data they share with chatbots. When privacy agreements—detailing how data is collected, used, stored, and shared—are unclear, users should be more cautious about what they disclose.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ***** CASE 2 **** -->
+            <div class="faq-item" data-id="case-item-2">
+              <div class="faq-question" data-tooltip="Click to Expand/Collapse" data-id="case-question-2">
+                <span data-id="case-question-text-2"><b>Case 2</b></br> Bard (i.e., Gemini): A Generative AI Chatbot Developed by Google</span>
+                <span class="faq-toggle" data-id="case-toggle-2">+</span>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-5">
+                <div class="answer-summary" data-id="case-summary-5">
+                  <span data-id="case-summary-text-5">&#x2022;&nbsp;&nbsp;General Information about Bard</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-5">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-5">
+                  <p data-id="case-details-text-5">
+                    Bard, currently known as Gemini, is a generative AI chatbot developed by Google and launched in 2023 as a direct response to the rise of OpenAI’s ChatGPT. The company says that Bard “seeks to combine the breadth of the world’s knowledge with the power, intelligence, and creativity of our large language models”. [<a href="https://abcnews.go.com/Technology/google-takes-chatgpt-new-ai-program-named-bard/story?id=96932866" target="_blank">Source</a>]
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-6">
+                <div class="answer-summary" data-id="case-summary-6">
+                  <span data-id="case-summary-text-6">&#x2022;&nbsp;&nbsp;Bard's Free Access and Variety of Features Attract Many Users</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-6">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-6">
+                  <p data-id="case-details-text-6">
+                    Bard has become popular, with approximately 146 million users by May 2023 [<a href="https://www.uctoday.com/unified-communications/google-bard-vs-chatgpt-battle-of-the-ai-chatbots/" target="_blank">Source</a>]. The tool provides users with free access and diverse functionalities. It helps users at reviewing, revising, and generating content for emails, articles, and advertisements, while also supporting translation in over 200 languages. Also, Bard aids developers by generating, debugging, and explaining code in various programming languages. It can summarize complex articles or provide easy-to-understand versions. These and other capabilities of Bard has made it a popular tool for users.
+                    </br></br>
+                    Find more details <a href="https://www.elegantthemes.com/blog/business/how-to-use-google-bard-ai#5-drafting-email-in-gmail" target="_blank">Here</a> and <a href="https://amberstudent.com/blog/post/top-10-ways-to-use-google-bard-ai-to-amplify-your-productivity#strong2-multiple-languages-translating-with-bardstrong" target="_blank">Here</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-7">
+                <div class="answer-summary" data-id="case-summary-7">
+                  <span data-id="case-summary-text-7">&#x2022;&nbsp;&nbsp;Google Search Revealed Users' Private Conversations Shared with Bard</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-7">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-7">
+                  <p data-id="case-details-text-7">
+                    Despite these interesting features, Bard has also faced significant privacy risks. For example, in September 2023, a post on X (formerly Twitter) revealed that users’ private conversations with Bard were shown as search results for specific queries [<a href="https://twitter.com/gaganghotra_/status/1706545667362210129" target="_blank">Source</a>]. When users clicked on the results, they were directed to historical records of conversations by other users with Bard on the same topic. This indicated that the database Google used for search results included specific Bard conversations.
+                    </br></br>
+                    Later, a researcher at Google DeepMind explained that the chat conversations appearing in these search results had previously been shared with other user/s through the ‘Share Functionality’ common in AI chatbots, which allows users to provide links to conversations with other people.
+                    </br></br>
+                    Critics pointed out that users who shared these links likely did so with a small circle of trusted people, expecting their conversations to remain private and only be shared among those chosen individuals.
+                    </br></br>
+                    Find more details <a href="https://www.fastcompany.com/90958811/google-was-accidentally-leaking-its-bard-ai-chats-into-public-search-results" target="_blank">Here</a> and <a href="https://venturebeat.com/ai/oops-google-search-caught-publicly-indexing-users-conversations-with-bard-ai/" target="_blank">Here</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-8">
+                <div class="answer-summary" data-id="case-summary-8">
+                  <span data-id="case-summary-text-8">&#x2022;&nbsp;&nbsp;Key Takeaways from the Incident for Chatbot Users</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-8">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-8">
+                  <p data-id="case-details-text-8">
+                    One key takeaway from the incident is that the privacy risks associated with chatbots are not fully understood by companies, developers, and end-users, and these risks often emerge over time through similar incidents. In this incident, Google failed to foresee and clearly inform users that sharing their private conversations through the ‘Share Functionality’ could result in those conversations being included in Google search results.
+                    </br></br>
+                    As chatbots gain popularity and become major sources of private conversations, these privacy risks could pose unforeseen threats to various stakeholders. To mitigate some privacy risks in these situations, users can avoid sharing sensitive information in conversations with chatbots.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ***** CASE 3 **** -->
+            <div class="faq-item" data-id="case-item-3">
+              <div class="faq-question" data-tooltip="Click to Expand/Collapse" data-id="case-question-3">
+                <span data-id="case-question-text-3"><b>Case 3</b></br> ChatGPT: A Generative AI Chatbot Developed by OpenAI</span>
+                <span class="faq-toggle" data-id="case-toggle-3">+</span>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-9">
+                <div class="answer-summary" data-id="case-summary-9">
+                  <span data-id="case-summary-text-9">&#x2022;&nbsp;&nbsp;General Information about ChatGPT</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-9">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-9">
+                  <p data-id="case-details-text-9">
+                    ChatGPT (short for 'Chat Generative Pre-trained Transformer') is an AI-powered chatbot capable of understanding and processing natural human language through text, voice, and images. It generates human-like responses and answers questions via a conversational interface. The company's mission is said to ‘ensure that artificial general intelligence—AI systems that are generally smarter than humans—benefits all of humanity’. [<a href="https://openai.com/about/" target="_blank">Source</a>]
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-10">
+                <div class="answer-summary" data-id="case-summary-10">
+                  <span data-id="case-summary-text-10">&#x2022;&nbsp;&nbsp;ChatGPT’s Free Access and Variety of Features Attract Many Users</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-10">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-10">
+                  <p data-id="case-details-text-10">
+                    ChatGPT gained widespread popularity, reaching approximately 180 million users by December 2023 [<a href="https://www.uctoday.com/unified-communications/google-bard-vs-chatgpt-battle-of-the-ai-chatbots/" target="_blank">Source</a>], largely due to its free access and different functionality. The tool assists users in generating ideas, solving challenges, simplifying complex topics, summarizing lengthy texts, and translating texts across different langauges. It also supports a wide range of writing tasks, from drafting essays to refining content. Additionally, ChatGPT is used by developers for helping with coding and debugging in various programming languages.
+                    </br></br>
+                    Find more details <a href="https://www.forbes.com/sites/bernardmarr/2023/03/01/the-best-examples-of-what-you-can-do-with-chatgpt/" target="_blank">Here</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-11">
+                <div class="answer-summary" data-id="case-summary-11">
+                  <span data-id="case-summary-text-11">&#x2022;&nbsp;&nbsp;Researchers Showed that Conversations Can Be Extracted from ChatGPT</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-11">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-11">
+                  <p data-id="case-details-text-11">
+                    Despite these interesting capabilities, ChatGPT has also faced various privacy risks. For example, a 2023 research paper revealed that ChatGPT’s training data—which includes users' private conversations and their personally identifiable information—can be easily extracted using specific prompts. These prompts cause the chatbot to diverge from its chatbot-style text generation and instead output text in a more internet-style text format.
+                    </br></br>
+                    In the study, researchers used simple prompts that included the word ‘poem’ in conversations with the chatbot's public interface. As a result, they were able to extract the personally identifiable information (PII) of dozens of individuals used in training the chatbot’s models. As shown in the screenshot below, the chatbot outputed sensitive information, including name, email addresse, and phone number of an individual.
+                    </br></br>
+                    Using only $200 USD worth of queries to ChatGPT, researchers were able to extract over 10,000 unique, verbatim memorized training examples. The researchers suggested that adversaries with larger budgets could potentially extract far more data.
+                    </br></br>
+                    <img src="chatgptcase.png" alt="chatgpt outputing users' private information" width="50%">
+                    </br></br>
+                    Find more details <a href="https://arxiv.org/abs/2311.17035" target="_blank">Here</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-answer" data-id="case-answer-12">
+                <div class="answer-summary" data-id="case-summary-12">
+                  <span data-id="case-summary-text-12">&#x2022;&nbsp;&nbsp;Key Takeaways from the Incident for Chatbot Users</span>
+                  <span class="faq-toggle toggle-layertwo" data-id="case-toggle-summary-12">+</span>
+                </div>
+                <div class="answer-details" data-id="case-details-12">
+                  <p data-id="case-details-text-12">
+                    Recent conversational agents (i.e., chatbots) leverage the latest advancements in AI and are often freely available. This accessibility allows the tools to gain access to more data and improve its models in some aspects. However, this data collection goal should not be pursued without carefully analyzing the ethical implications. Unfortunately, in many cases, these technologies are released to the public before their ethical consequences such as privacy risks are thoroughly studied or effectively communicated to stakeholders to ensure proper use.
+                    </br></br>
+                    This incident shows how adversaries can exploit a chatbot’s public interface to access users’ personal information with minimal resources. While modern chatbots excel in many tasks, their capabilities can also be misused to compromise user privacy if potential risks are not thoroughly examined and addressed.
+                    </br></br>
+                    Given these risks, chatbot users should critically evaluate the potential privacy risks when sharing sensitive information. For example, they can avoid sharing detailed personal information or refrain from using the chatbots for tasks that require disclosing such sensitive information.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add two more FAQ items here in the same structure -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/marked@4.3.0/marked.min.js"></script>
+  <script src="https://unpkg.com/compromise"></script>
+  <script type="module" src="script.js"></script>
+  <script type="module" src="opt-in-out-setting.js"></script>
+  <script src="script-pii-from-text.js"></script>
+
+</body>
+</html>
