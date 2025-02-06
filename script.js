@@ -434,8 +434,6 @@ function generalizePII(type, value) {
     return '[Generalized Data]';
 }
 
-
-
 // Function to handle PII detection
 function handlePIIDetection(userMessage) {
 
@@ -639,22 +637,6 @@ function logInteraction(panel, action, element) {
         readableDate: readableDate, // Add the human-readable format
     });
 }
-
-// piiNoticePanel.addEventListener('click', (event) => {
-//     const clickedElement = event.target;
-
-//     // Get detailed information about the clicked element
-//     const elementDetails = {
-//         id: clickedElement.getAttribute('id') || null,
-//         class: clickedElement.getAttribute('class') || null,
-//         dataId: clickedElement.getAttribute('data-id') || null,
-//         tag: clickedElement.tagName,
-//         textContent: clickedElement.textContent.trim().substring(0, 40), // First 50 chars of text
-//     };
-
-//     // Log the interaction with detailed element info
-//     logInteraction("privacyNoticePanel", "click", JSON.stringify(elementDetails));
-// });
 
 piiNoticePanel.addEventListener('click', (event) => {
     const clickedElement = event.target;

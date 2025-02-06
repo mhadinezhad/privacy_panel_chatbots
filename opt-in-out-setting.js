@@ -13,19 +13,6 @@ const settingsMenuItem = document.querySelector('.profile-panel ul li:nth-child(
 const menuItems = document.querySelectorAll('.settings-menu .menu-item');
 const panels = document.querySelectorAll('.settings-panel');
 
-// Helper function to activate a specific panel and menu item
-// function activatePanel(index) {
-//   menuItems.forEach((item, i) => {
-//     // Toggle active class for menu items
-//     item.classList.toggle('active', i === index);
-
-//     // Show/hide corresponding panels
-//     if (panels[i]) {
-//       panels[i].style.display = i === index ? 'block' : 'none';
-//     }
-//   });
-// }
-
 // Function to toggle the visibility of the panel (the one for the profile picture)
 profileIcon.addEventListener('click', (event) => {
   event.stopPropagation(); // Prevent click event from propagating to document
