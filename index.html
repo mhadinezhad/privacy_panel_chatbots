@@ -55,7 +55,8 @@
 
     /* Input styling */
     input[type="text"],
-    input[type="email"] {
+    input[type="email"],
+    input[type="password"] {
       width: 100%;
       padding: 12px 15px;
       font-size: 16px;
@@ -64,7 +65,8 @@
       transition: border 0.3s ease;
     }
     input[type="text"]:focus,
-    input[type="email"]:focus {
+    input[type="email"]:focus,
+    input[type="password"]:focus {
       border-color: #666;
       outline: none;
     }
@@ -128,6 +130,10 @@
       <label for="full-name">Enter your Full Name:</label>
       <input type="text" id="full-name" placeholder="Your Full Name">
     </div>
+    <div class="form-group">
+      <label for="study-password">Enter Study Password:</label>
+      <input type="password" id="study-password" placeholder="Study Password">
+    </div>
     <div class="radio-group">
       <p>Select one of the following:</p>
       <label class="radio-option">
@@ -143,14 +149,18 @@
   </div>
 
   <script>
+    // The hard-coded study password
+    const correctPassword = "study2025";
+
     document.getElementById('start-button').addEventListener('click', function() {
       // Retrieve values from the input fields
       const email = document.getElementById('umass-email').value.trim();
       const name = document.getElementById('full-name').value.trim();
+      const password = document.getElementById('study-password').value;
       const zoomMeetingOption = document.querySelector('input[name="zoomMeeting"]:checked');
 
       // Basic validation to ensure all fields are filled
-      if (!email || !name || !zoomMeetingOption) {
+      if (!email || !name || !password || !zoomMeetingOption) {
         alert('Please fill in all fields.');
         return;
       }
@@ -159,6 +169,12 @@
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         alert('Please enter a valid email address.');
+        return;
+      }
+
+      // Validate the password
+      if (password !== correctPassword) {
+        alert('Incorrect password. Please try again.');
         return;
       }
 
