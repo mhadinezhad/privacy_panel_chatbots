@@ -879,7 +879,6 @@ function locateAndHighlight(start, end) {
     });
 }
 
-
 /**
  * Calculate the pixel position of a character in the textarea
  * @param {HTMLTextAreaElement} textarea - The textarea element
@@ -911,7 +910,6 @@ function calculatePixelPosition(textarea, index) {
     const offsetAdjustment = 70; // Adjust based on testing
     return position - offsetAdjustment;
 }
-
 
 // Helper function to adjust indices for newlines
 function adjustIndexForNewlines(text, index) {
