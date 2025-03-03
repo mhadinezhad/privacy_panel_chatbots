@@ -579,8 +579,8 @@ async function sendUserMessage(message) {
         // Add user message to the history
         conversationHistory.push({ role: 'user', content: message });
         
-        if (conversationHistory.length > 10) {
-            conversationHistory.shift(); // Ensure only last 10 messages are kept
+        if (conversationHistory.length > 5) {
+            conversationHistory.shift(); // Ensure only last N messages are kept
         }
 
         const response = await getChatGPTResponse(message, aiMessageElement); // Fetch API response
@@ -588,8 +588,8 @@ async function sendUserMessage(message) {
         // Add assistant response to the history
         conversationHistory.push({ role: 'assistant', content: response });
 
-        if (conversationHistory.length > 10) {
-            conversationHistory.shift(); // Ensure only last 10 messages are kept
+        if (conversationHistory.length > 5) {
+            conversationHistory.shift(); // Ensure only last N messages are kept
         }
 
         // Log the successful response based on the action
