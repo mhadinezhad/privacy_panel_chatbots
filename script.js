@@ -579,7 +579,7 @@ async function sendUserMessage(message) {
         // Add user message to the history
         conversationHistory.push({ role: 'user', content: message });
         
-        if (conversationHistory.length > 5) {
+        if (conversationHistory.length > 7) {
             conversationHistory.shift(); // Ensure only last N messages are kept
         }
 
@@ -588,7 +588,7 @@ async function sendUserMessage(message) {
         // Add assistant response to the history
         conversationHistory.push({ role: 'assistant', content: response });
 
-        if (conversationHistory.length > 5) {
+        if (conversationHistory.length > 7) {
             conversationHistory.shift(); // Ensure only last N messages are kept
         }
 
@@ -711,9 +711,9 @@ async function getChatGPTResponse(userMessage, aiMessageElement) {
                 'Authorization': `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                model: 'gpt-4',
-                messages: conversationHistory, // Include the last 20 messages
-                max_tokens: 700,
+                model: 'gpt-4o',
+                messages: conversationHistory, // Include the last N messages
+                max_tokens: 2000,
                 stream: true,
             }),
         });
