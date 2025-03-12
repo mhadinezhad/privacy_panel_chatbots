@@ -1373,3 +1373,19 @@ body.panel-collapsed .toggle-panel-button {
   input:checked + .slider:before {
     transform: translateX(14px);
   }
+
+/* Style for the tooltip */
+.tooltip {
+    position: absolute;
+    background-color: rgba(15, 15, 15, 0.8);
+    color: #fff;
+    text-align: center;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none; /* Prevents tooltip from interfering with hover */
+}

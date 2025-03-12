@@ -247,6 +247,10 @@ function createPIIBox(type, instances) {
         restoreIcon.setAttribute('data-start', start);
         restoreIcon.setAttribute('data-end', end);
 
+        // Attach tooltip functionality to locateIcon
+        addTooltipToElement(locateIcon, "View in my prompt");
+        addTooltipToElement(restoreIcon, "Restore");
+
         restoreIcon.addEventListener('click', () => {
             const textarea = document.getElementById('user-input');
             // Replace specific PII text with the original
@@ -353,6 +357,32 @@ function createPIIBox(type, instances) {
     document.addEventListener('click', closeAllDropdowns);
 
     addLocateListeners();
+}
+
+function addTooltipToElement(element, tooltipText) {
+    const tooltip = document.createElement("div");
+    tooltip.classList.add("tooltip");
+    tooltip.textContent = tooltipText;
+    document.body.appendChild(tooltip);
+
+    element.addEventListener("mouseenter", function (event) {
+        tooltip.style.opacity = "1";
+        tooltip.style.position = "absolute";
+        positionTooltip(event, tooltip);
+    });
+
+    element.addEventListener("mouseleave", function () {
+        tooltip.style.opacity = "0";
+    });
+
+    element.addEventListener("mousemove", function (event) {
+        positionTooltip(event, tooltip);
+    });
+}
+
+function positionTooltip(event, tooltip) {
+    tooltip.style.left = `${event.pageX -45}px`;
+    tooltip.style.top = `${event.pageY + 20}px`;
 }
 
 // Utility function to replace a PII instance in the text
