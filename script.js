@@ -997,11 +997,4 @@ privacyTipsPopup.addEventListener('click', (event) => {
 
 memoryToggle.addEventListener("change", function () {
     useMemory = this.checked; // true when checked => use memory; false when unchecked => no memory
-    if (!this.checked) { 
-      console.log("Checkbox is unchecked! Do something here.");
-
-    }
-    if (this.checked) {
-      console.log("Checkbox is checked! Do something.");
-    }
 });
