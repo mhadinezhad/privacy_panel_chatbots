@@ -69,8 +69,12 @@ const overlay = document.getElementById('overlay');
 const privacyTipsPopup = document.getElementById('privacyTipsPopup');
 const closePopupBtn = document.getElementById('closePopupBtn');
 const privacyTipsBtn = document.querySelector('.privacy-tips-btn');
+const memoryToggle = document.getElementById("memory-toggle");
+
 
 let isProceeding = false;
+let useMemory = true;
+let num_messages_memory = 7;
 
 // Toggle panel visibility
 togglePanelButton.addEventListener('click', () => {
@@ -605,34 +609,42 @@ async function sendUserMessage(message) {
     chatPanel.appendChild(aiMessageContainer);
     chatPanel.scrollTop = chatPanel.scrollHeight;
 
+
     try {
-        // Add user message to the history
-        conversationHistory.push({ role: 'user', content: message });
-        
-        if (conversationHistory.length > 7) {
-            conversationHistory.shift(); // Ensure only last N messages are kept
+        // Update conversationHistory based on the memory toggle:
+        if (useMemory) {
+            // Append the current message to conversationHistory and maintain up to 7 messages.
+            conversationHistory.push({ role: 'user', content: message });
+            if (conversationHistory.length > num_messages_memory) {
+                conversationHistory.shift();
+            }
+        } else {
+            // If memory is off, reset conversationHistory to only contain the current message.
+            conversationHistory = [{ role: 'user', content: message }];
         }
 
-        const response = await getChatGPTResponse(message, aiMessageElement); // Fetch API response
+        // Send the API request using the conversationHistory array
+        const response = await getChatGPTResponse(message, aiMessageElement);
 
-        // Add assistant response to the history
-        conversationHistory.push({ role: 'assistant', content: response });
-
-        if (conversationHistory.length > 7) {
-            conversationHistory.shift(); // Ensure only last N messages are kept
+        if (useMemory) {
+            // Append assistant response to conversationHistory and trim if necessary.
+            conversationHistory.push({ role: 'assistant', content: response });
+            if (conversationHistory.length > num_messages_memory) {
+                conversationHistory.shift();
+            }
+        } else {
+            // Optionally, you can decide not to update conversationHistory when not using memory.
         }
 
-        // Log the successful response based on the action
+        // Log the interaction (unchanged)
         if (isProceeding) {
             logMessage("proceedSendBtn", message, true, response);
-            isProceeding = false; // Reset the flag
+            isProceeding = false;
         } else {
             logMessage("sendButton", message, true, response);
         }
     } catch (error) {
         console.error("Error fetching ChatGPT response:", error);
-
-        // Log the error response based on the action
         const action = isProceeding ? "proceedSendBtn" : "sendButton";
         logMessage(action, message, true, null);
         aiMessageElement.textContent = 'Sorry, there was an error processing your request. Please try again later.';
@@ -981,4 +993,15 @@ privacyTipsPopup.addEventListener('click', (event) => {
 
     // Log the interaction with detailed element info
     logInteraction("privacyTipsPopup", "click", JSON.stringify(elementDetails));
+});
+
+memoryToggle.addEventListener("change", function () {
+    useMemory = this.checked; // true when checked => use memory; false when unchecked => no memory
+    if (!this.checked) { 
+      console.log("Checkbox is unchecked! Do something here.");
+
+    }
+    if (this.checked) {
+      console.log("Checkbox is checked! Do something.");
+    }
 });
