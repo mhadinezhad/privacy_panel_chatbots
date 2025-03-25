@@ -443,25 +443,28 @@ function generateFake(type) {
 }
 
 function generalizePII(type, value) {
+    if (type === 'DoB') {
+        // Convert value to string if necessary
+        if (typeof value !== 'string') {
+            value = String(value);
+        }
+        const yearMatch = value.match(/\b\d{4}\b/); // Match a 4-digit year
+        return yearMatch ? yearMatch[0] : '[Generalized Date]'; // Return the year or fallback
+    }
+
+    // For other types, first check for a valid string.
     if (typeof value !== 'string' || value.trim() === '') {
         return '[Generalized Data]'; // Handle invalid or empty input
     }
 
     if (type === 'Physical Address') {
-        // Split the address using a space as the delimiter
-        const parts = value.split(' ').filter(Boolean); // Remove extra spaces
+        const parts = value.split(' ').filter(Boolean);
         if (parts.length >= 2) {
             return parts.slice(-2).join(' '); // Return the last two parts
         } else if (parts.length === 1) {
-            return parts[0]; // If only one part exists, return it
+            return parts[0];
         }
-        return '[Generalized Address]'; // Default fallback
-    }
-
-    if (type === 'DoB') {
-        // Extract the year from the value
-        const yearMatch = value.match(/\b\d{4}\b/); // Match a 4-digit year
-        return yearMatch ? yearMatch[0] : '[Generalized Date]'; // Return the year or fallback
+        return '[Generalized Address]';
     }
 
     // Default case for other types
