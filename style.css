@@ -483,8 +483,8 @@ body.panel-collapsed .toggle-panel-button {
 .privacy-tips-popup {
     display: none;
     position: fixed;
-    width: 60%;
-    height: 70%;
+    width: 75%;
+    height: 75%;
     background-color: #fff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
     z-index: 1100;
@@ -528,18 +528,19 @@ body.panel-collapsed .toggle-panel-button {
 }
 
 .faq-left h2, .faq-right h2 {
-    font-size: 15px;
-    margin-bottom: 15px;
+    font-size: 20px;
+    margin-bottom: 20px;
     padding-left: 3px;
     color: #001F3F;
 }
 
 .faq-item {
     padding: 15px 0px 15px 20px;
-    font-size: 13px;
+    font-size: 14px;
     border: solid 1px #dce6eb;
     margin-bottom: 10px;
     transition: all 0.2s ease;
+    line-height: 1.5;
 }
 
 .faq-item:hover {
@@ -550,6 +551,8 @@ body.panel-collapsed .toggle-panel-button {
     display: flex;
     justify-content: space-between;
     cursor: pointer;
+    font-size: 15px;
+    line-height: 1.7;
 }
 
 .faq-answer {
